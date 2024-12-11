@@ -65,8 +65,8 @@ pub fn player_collect_bomb(
 
 pub fn player_movement(
     keyboard_input: Res<ButtonInput<KeyCode>>,
-    mut player_query: Query<&mut Transform, (With<Player>, Without<NotWalkable>)>,
-    not_walkable: Query<&Transform, With<NotWalkable>>,
+    mut player_query: Query<&mut Transform, (With<Player>, Without<NotPassableForPlayer>)>,
+    not_walkable: Query<&Transform, With<NotPassableForPlayer>>,
 ) {
     if let Ok(mut transform) = player_query.get_single_mut() {
         let mut direction = Vec3::ZERO;

@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 use crate::*;
+use rand::Rng;
 
 
 use crate::enemy::components::Enemy;
@@ -60,9 +61,9 @@ pub fn spawn_enemies(
 
 
 pub fn enemy_movement(
-    mut enemy_query: Query<(&mut Transform, &mut Enemy), Without<NotWalkable>>,
+    mut enemy_query: Query<(&mut Transform, &mut Enemy), Without<NotPassableForEnemy>>,
     time: Res<Time>,
-    not_walkable: Query<&Transform, With<NotWalkable>>,
+    not_walkable: Query<&Transform, With<NotPassableForEnemy>>,
 ) {
     for (mut transform, mut enemy) in enemy_query.iter_mut() {
         let direction = Vec3::new(enemy.direction.x, enemy.direction.y, 0.0);
@@ -84,11 +85,43 @@ pub fn enemy_movement(
             transform.translation = new_position;
         } else {
 
-            enemy.num += 1;
-            enemy.num %= 4;
-            enemy.direction = ENEMY_DIRECTIONS_ARRAY[enemy.num as usize];
+            let mut rng = rand::thread_rng(); // Tworzenie generatora liczb losowych
+            let rand_num = rng.gen_range(0..=3); // Generowanie liczby z zakresu 0..=3 (włącznie)
+
+            enemy.direction = ENEMY_DIRECTIONS_ARRAY[rand_num as usize];
         }
     }
 }
 
+// pub fn enemy_dirt_collision(
+//     mut enemy_query: Query<(&mut Transform, &mut Enemy), Without<Dirt>>,
+//     time: Res<Time>,
+//     dirt: Query<&Transform, With<Dirt>>,
+// ) {
+//     for (mut transform, mut enemy) in enemy_query.iter_mut() {
+//         let direction = Vec3::new(enemy.direction.x, enemy.direction.y, 0.0);
+//         let mut collision = false;
 
+//         let time_delta = time.delta_secs();
+//         let new_position = transform.translation + direction * ENEMY_SPEED * time_delta;
+
+//         for obstacle in dirt.iter() {
+//             if (new_position.x - obstacle.translation.x).abs() < TILE_SIZE
+//                 && (new_position.y - obstacle.translation.y).abs() < TILE_SIZE
+//             {
+//                 collision = true;
+//                 break;
+//             }
+//         }
+
+//         if !collision {
+//             transform.translation = new_position;
+//         } else {
+
+//             let mut rng = rand::thread_rng(); // Tworzenie generatora liczb losowych
+//             let rand_num = rng.gen_range(0..=3); // Generowanie liczby z zakresu 0..=3 (włącznie)
+
+//             enemy.direction = ENEMY_DIRECTIONS_ARRAY[rand_num as usize];
+//         }
+//     }
+// }

@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use rand::Rng;
 
 use crate::bomb::resources::BombDebounce;
 use crate::*;
@@ -47,7 +48,23 @@ pub fn plant_bomb_system(
                     timer: Timer::from_seconds(3.0, TimerMode::Once),
                 });
 
-            println!("Plantuje bombę");
+                let random_number = rand::thread_rng().gen_range(0..2);
+
+                if random_number == 0 {
+                    // Spawnuj pierwsze audio
+                    commands.spawn(
+                        AudioPlayer::new(
+                            asset_server.load("audio/run.ogg"),
+                        )
+                    );
+                } else {
+                    // Spawnuj drugie audio
+                    commands.spawn(
+                        AudioPlayer::new(
+                            asset_server.load("audio/explosion_soon.ogg"),
+                        )
+                    );
+                }
 
             // Resetuj timer debouncera
             bomb_debounce.timer.reset();

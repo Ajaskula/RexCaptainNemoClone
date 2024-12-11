@@ -20,7 +20,8 @@ pub fn spawn_solid_walls_h(
             },
             Transform::from_translation(Vec3::new(x as f32 - window.width(), -window.height(), 0.0)),
             GlobalTransform::default(),
-            NotWalkable
+            NotPassableForEnemy,
+            NotPassableForPlayer,
         )
         );
         commands.spawn((
@@ -31,7 +32,8 @@ pub fn spawn_solid_walls_h(
             },
             Transform::from_translation(Vec3::new(x as f32 - window.width(), window.height(), 0.0)),
             GlobalTransform::default(),
-            NotWalkable
+            NotPassableForEnemy,
+            NotPassableForPlayer
         )
         );
         
@@ -55,7 +57,8 @@ pub fn spawn_solid_walls_v(
             },
             Transform::from_translation(Vec3::new(window.width(), y as f32 - window.height(), 0.0)),
             GlobalTransform::default(),
-            NotWalkable
+            NotPassableForEnemy,
+            NotPassableForPlayer
         )
         );
         commands.spawn((
@@ -66,7 +69,8 @@ pub fn spawn_solid_walls_v(
             },
             Transform::from_translation(Vec3::new(-window.width(), y as f32 - window.height(), 0.0)),
             GlobalTransform::default(),
-            NotWalkable
+            NotPassableForEnemy,
+            NotPassableForPlayer
         )
         );
         

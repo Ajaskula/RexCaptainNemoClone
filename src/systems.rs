@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
+use bevy_audio::PlaybackMode;
 
 // rozmiar kafelka mapy
 pub const TILE_SIZE: f32 = 40.0;
@@ -41,3 +42,33 @@ pub fn set_background(
     }
 
 }
+
+
+fn setup(asset_server: Res<AssetServer>, mut commands: Commands) {
+    commands.spawn(AudioPlayer::new(
+        asset_server.load("sounds/Windless Slopes.ogg"),
+    ));
+}
+
+
+pub fn play_background_music(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+) { 
+    commands.spawn((
+        AudioPlayer::new(
+            asset_server.load("audio/egipt.ogg"),
+        ),
+    
+        PlaybackSettings {
+            mode: PlaybackMode::Loop,
+            ..Default::default()
+        }
+    )
+    );
+}
+
+
+
+// Odtwarzanie muzyki z ustawieniami odtwarzania
+// audio_player.play(music_handle.clone(), playback_settings);

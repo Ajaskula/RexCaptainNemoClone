@@ -21,7 +21,8 @@ pub fn spawn_walls(
             Transform::from_translation(Vec3::new(TILE_SIZE*x as f32 + window.width() / 2.0, window.height() / 2.0, 0.0)),
             // SolidWall{},
             Explodable{},
-            NotWalkable,
+            NotPassableForEnemy,
+            NotPassableForPlayer,
         )
     );
     }
@@ -59,7 +60,8 @@ pub fn spawn_wall_rectangles(
                         },
                         Transform::from_translation(Vec3::new(world_x, world_y, 0.0)),
                         Explodable {},
-                        NotWalkable,
+                        NotPassableForEnemy,
+                        NotPassableForPlayer,
                     ));
                 }
             }

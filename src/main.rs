@@ -10,7 +10,7 @@ mod enemy;
 mod player;
 mod bomb;
 
-use systems::{spawn_camera, set_background, TILE_SIZE};
+use systems::*;
 use components::*;
 
 use bomb::components::*;
@@ -32,6 +32,7 @@ fn main() {
     .init_resource::<BombCount>()
     .add_plugins(DefaultPlugins)
     .add_systems(Startup, spawn_camera)
+    .add_systems(Startup, play_background_music)
     .add_systems(Startup, set_background)
     .add_systems(Startup, spawn_player)
     .add_systems(Startup, (spawn_solid_walls_v, spawn_solid_walls_h))
@@ -50,16 +51,9 @@ fn main() {
     .add_systems(Update, explosive_lifetime_system)
     .add_systems(Update, explodable_lifetime_system)
     .add_systems(Update, enemy_movement)
+    // .add_systems(Update, enemy_dirt_collision)
     .run();
 }
-
-
-// funkcja doda gracza
-
-
-
-// odpowiada za movement gracza
-
 
 
 fn explosive_lifetime_system(
@@ -122,6 +116,7 @@ pub fn update_camera(
     player: Query<&Transform, (With<Player>, Without<Camera2d>)>,
     time: Res<Time>,
 ) {
+
     let Ok(mut camera) = camera.get_single_mut() else {
         return;
     };

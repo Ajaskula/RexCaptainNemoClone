@@ -6,7 +6,10 @@ pub struct Lifetime {
 }
 
 #[derive(Component)]
-pub struct NotWalkable;
+pub struct NotPassableForEnemy;
+
+#[derive(Component)]
+pub struct NotPassableForPlayer;
 
 
 #[derive(Component)]

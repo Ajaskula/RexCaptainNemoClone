@@ -61,8 +61,11 @@ pub fn spawn_full_dirt_rectangles(
                     Transform::from_translation(Vec3::new(world_x + 20.0*TILE_SIZE, world_y+20.0*TILE_SIZE, 0.0)),
                     Dirt {},          // Oznaczamy jako Dirt
                     Explodable {},    // Może być eksplodowane
+                    NotPassableForEnemy,
                 ));
             }
         }
     }
 }
+
+
