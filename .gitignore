@@ -1,0 +1,20 @@
+# Ignorowanie plików .png
+# *.png
+
+/assets/
+
+
+
+# Ignorowanie plików specyficznych dla Rust
+/target/
+**/*.rs.bk
+
+# Ignorowanie plików Cargo
+**/Cargo.lock
+**/Cargo.toml
+
+# Ignorowanie logów
+*.log
+
+# Ignorowanie plików IDE (np. VSCode, IntelliJ)
+/.vscode/
