@@ -1,6 +1,9 @@
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
 use bevy_audio::PlaybackMode;
+use crate::player::components::Player;
+use crate::components::Lifetime;
+use crate::components::Explodable;
 
 // rozmiar kafelka mapy
 pub const TILE_SIZE: f32 = 40.0;
@@ -44,12 +47,6 @@ pub fn set_background(
 }
 
 
-fn setup(asset_server: Res<AssetServer>, mut commands: Commands) {
-    commands.spawn(AudioPlayer::new(
-        asset_server.load("sounds/Windless Slopes.ogg"),
-    ));
-}
-
 
 pub fn play_background_music(
     mut commands: Commands,
@@ -68,6 +65,46 @@ pub fn play_background_music(
     );
 }
 
+pub fn update_camera(
+    mut camera: Query<&mut Transform, (With<Camera2d>, Without<Player>)>,
+    player: Query<&Transform, (With<Player>, Without<Camera2d>)>,
+    time: Res<Time>,
+) {
+
+    let Ok(mut camera) = camera.get_single_mut() else {
+        return;
+    };
+
+    let Ok(player) = player.get_single() else {
+        return;
+    };
+
+    let Vec3 { x, y, .. } = player.translation;
+    let direction = Vec3::new(x, y, camera.translation.z);
+
+    // Applies a smooth effect to camera movement using stable interpolation
+    // between the camera position and the player position on the x and y axes.
+    camera
+        .translation
+        .smooth_nudge(&direction, 2.0, time.delta_secs());
+}
+
+
+pub fn explodable_lifetime_system(
+    mut commands: Commands,
+    time: Res<Time>,
+    mut query: Query<(Entity, &mut Lifetime, &Explodable)>, // Dodajemy `Explodable` do query
+) {
+    for (entity, mut lifetime, _explodable) in query.iter_mut() {
+        // Zmniejsz czas życia
+        lifetime.timer.tick(time.delta());
+        if lifetime.timer.finished() {
+            // Usuń element, gdy czas się skończy
+            commands.entity(entity).despawn();
+            println!("Wysadzam wysadzalny element {:?}", entity);
+        }
+    }
+}
 
 
 // Odtwarzanie muzyki z ustawieniami odtwarzania

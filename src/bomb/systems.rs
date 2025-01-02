@@ -6,12 +6,14 @@ use crate::*;
 
 pub const EXPLOSION_RANGE: f32 = 2.0;
 
+// podkłada wrzuca timer dotyczący czasu, po którym można podłożyć następną bombę
 pub fn setup_bomb(mut commands: Commands) {
     commands.insert_resource(BombDebounce {
         timer: Timer::from_seconds(0.3, TimerMode::Once), // 0.3 sekundy na debounce
     });
 }
 
+// system podkładania bomb
 pub fn plant_bomb_system(
     mut commands: Commands,
     keyboard_input: Res<ButtonInput<KeyCode>>,
@@ -21,16 +23,19 @@ pub fn plant_bomb_system(
     transform_query: Query<&Transform, With<Player>>, // Pobieramy pozycję gracza
     asset_server: Res<AssetServer>, // Zasób obrazu bomby
 ) {
-    // Aktualizuj timer debouncera
+    // Aktualizuj timer, który pozwala na podrzucanie kolejnych bomb
     bomb_debounce.timer.tick(time.delta());
 
+    // sprawdzam czy mogę podrzucić kolejną bombę
     if keyboard_input.pressed(KeyCode::Space)
         && bomb_count.value > 0
         && bomb_debounce.timer.finished()
-    {
+    {   
+        // podkładam kolejną bombę
         bomb_count.value -= 1;
+        // znajduje pozycje gracza
         if let Ok(transform) = transform_query.get_single() {
-            commands
+            commands// spawnuje bombe w podanej lokalizacji
                 .spawn((
                     Sprite {
                         image: asset_server.load("textures/bomb.png").clone(),
@@ -43,7 +48,7 @@ pub fn plant_bomb_system(
                         0.0,
                     )),
                     PlantedBomb {},
-                ))
+                ))// dokładam do tego sprite lifetime z timerem
                 .insert(Lifetime {
                     timer: Timer::from_seconds(3.0, TimerMode::Once),
                 });
@@ -66,12 +71,14 @@ pub fn plant_bomb_system(
                     );
                 }
 
-            // Resetuj timer debouncera
+            // po podłożeniu bomby resetuje timer
             bomb_debounce.timer.reset();
         }
     }
 }
 
+
+// rozkłada bomby na mapie w dosyć losowy sposób
 pub fn spawn_bombs(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
