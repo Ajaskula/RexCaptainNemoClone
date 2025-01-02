@@ -11,22 +11,66 @@ pub fn spawn_dirt(
     let window = window_query.get_single().unwrap();
     let num_walls = 15;
     // let mut rng = rand::thread_rng();
-    for x in 0..num_walls {
-        let image_bomb = asset_server.load("textures/dirt.png");
-        // let x = rng.gen_range(0..=(window.width() / TILE_SIZE) as usize) * TILE_SIZE as usize;
-        // let y = rng.gen_range(0..=(window.height() / TILE_SIZE) as usize) * TILE_SIZE as usize;
-        commands.spawn((
-            Sprite {
-                image:image_bomb.clone(),
-                custom_size: Some(Vec2::new(TILE_SIZE, TILE_SIZE)),
-                ..Default::default()
-            },
-            Transform::from_translation(Vec3::new((TILE_SIZE * x as f32)  + window.width() / 2.0, TILE_SIZE* 5.0 + window.height() / 2.0, 0.0)),
-            Dirt{},
-            Explodable{}
-        )
-    );
-    }
+    let image_bomb = asset_server.load("textures/dirt.png");
+    // for x in 0..num_walls {
+    //     // let x = rng.gen_range(0..=(window.width() / TILE_SIZE) as usize) * TILE_SIZE as usize;
+    //     // let y = rng.gen_range(0..=(window.height() / TILE_SIZE) as usize) * TILE_SIZE as usize;
+    //     commands.spawn((
+    //         Sprite {
+    //             image:image_bomb.clone(),
+    //             custom_size: Some(Vec2::new(TILE_SIZE, TILE_SIZE)),
+    //             ..Default::default()
+    //         },
+    //         Transform::from_translation(Vec3::new(24.0 * TILE_SIZE as f32, 4.0 * TILE_SIZE as f32, 0.0)),
+    //         Dirt{},
+    //         Explodable{}
+    //     )
+    // );
+    // }
+    commands.spawn((
+        Sprite {
+            image:image_bomb.clone(),
+            custom_size: Some(Vec2::new(TILE_SIZE, TILE_SIZE)),
+            ..Default::default()
+        },
+        Transform::from_translation(Vec3::new(25.0 * TILE_SIZE as f32, -16.0 * TILE_SIZE as f32, 0.0)),
+        Dirt{},
+        Explodable{},
+        NotPassableForEnemy,
+    ));
+    commands.spawn((
+        Sprite {
+            image:image_bomb.clone(),
+            custom_size: Some(Vec2::new(TILE_SIZE, TILE_SIZE)),
+            ..Default::default()
+        },
+        Transform::from_translation(Vec3::new(25.0 * TILE_SIZE as f32, -17.0 * TILE_SIZE as f32, 0.0)),
+        Dirt{},
+        Explodable{},
+        NotPassableForEnemy,
+    ));
+    commands.spawn((
+        Sprite {
+            image:image_bomb.clone(),
+            custom_size: Some(Vec2::new(TILE_SIZE, TILE_SIZE)),
+            ..Default::default()
+        },
+        Transform::from_translation(Vec3::new(23.0 * TILE_SIZE as f32, -16.0 * TILE_SIZE as f32, 0.0)),
+        Dirt{},
+        Explodable{},
+        NotPassableForEnemy,
+    ));
+    commands.spawn((
+        Sprite {
+            image:image_bomb.clone(),
+            custom_size: Some(Vec2::new(TILE_SIZE, TILE_SIZE)),
+            ..Default::default()
+        },
+        Transform::from_translation(Vec3::new(23.0 * TILE_SIZE as f32, -17.0 * TILE_SIZE as f32, 0.0)),
+        Dirt{},
+        Explodable{},
+        NotPassableForEnemy,
+    ));
 }
 
 pub fn spawn_full_dirt_rectangles(

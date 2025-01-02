@@ -2,9 +2,12 @@ use bevy::prelude::*;
 use crate::*;
 use crate::enemy::components::Enemy;
 use player::resources::*;
-use crate::plague::components::Plague;
+use crate::moveable_elements::components::MovableElement;
 
-pub const PLAYER_SPEED: f32 = 0.2;
+pub const PLAYER_SPEED: f32 = 1.8;
+pub const TRESHOLD: f32 = 1.0;
+
+
 
 
 pub fn setup_colision(mut commands: Commands) {
@@ -122,14 +125,21 @@ pub fn player_collect_bomb(
 
 
 pub fn player_movement(
-    keyboard_input: Res<ButtonInput<KeyCode>>,
-    mut player_query: Query<&mut Transform, (With<Player>, Without<NotPassableForPlayer>)>,
-    not_walkable: Query<&Transform, With<NotPassableForPlayer>>,
-    time: Res<Time>
+    keyboard_input: Res<ButtonInput<KeyCode>>, // Wejście z klawiatury
+    mut player_query: Query<&mut Transform, (With<Player>, Without<NotPassableForPlayer>)>, // Zapytanie o gracza
+    not_walkable: Query<&Transform, With<NotPassableForPlayer>>, // Zapytanie o przeszkody, które nie są do przejścia
+    time: Res<Time>, // Czas (dla zarządzania szybkością poruszania się)
+    mut move_cooldown: ResMut<PlayerMoveCooldown>, // Zmienna cooldownu ruchu
 ) {
     if let Ok(mut transform) = player_query.get_single_mut() {
         let mut direction = Vec3::ZERO;
 
+        // Sprawdź czas od ostatniego ruchu
+        if time.elapsed() - move_cooldown.last_move_time < Duration::from_secs_f32(0.2) {
+            return; // Za wcześnie, aby poruszać się ponownie
+        }
+
+        // Określenie kierunku w zależności od naciśniętych klawiszy
         if keyboard_input.pressed(KeyCode::KeyW) {
             direction = Vec3::new(0.0, 1.0, 0.0);
         }
@@ -143,25 +153,24 @@ pub fn player_movement(
             direction = Vec3::new(1.0, 0.0, 0.0);
         }
 
-        let mut collision = false;
+        if direction == Vec3::ZERO {
+            return; // Nie ma wejścia, nie poruszaj się
+        }
 
+        let new_position = transform.translation + direction * TILE_SIZE;
+
+        // Sprawdzamy, czy gracz koliduje z jakąś przeszkodą
         for obstacle in not_walkable.iter() {
-            let new_x = (transform.translation.x + direction.x * PLAYER_SPEED);
-            let new_y = (transform.translation.y + direction.y * PLAYER_SPEED);
-
-            if (new_x - obstacle.translation.x).abs() < TILE_SIZE 
-                && (new_y - obstacle.translation.y).abs() < TILE_SIZE 
+            if (new_position.x - obstacle.translation.x).abs() < TILE_SIZE
+                && (new_position.y - obstacle.translation.y).abs() < TILE_SIZE
             {
-                collision = true;
-                break; // Nie musimy dalej sprawdzać
+                return; // Kolizja, nie można się poruszyć
             }
         }
 
-        if !collision {
-            transform.translation += direction * PLAYER_SPEED * TILE_SIZE;
-            // transform.translation.x = (transform.translation.x / TILE_SIZE).round() * TILE_SIZE;
-            // transform.translation.y = (transform.translation.y / TILE_SIZE).round() * TILE_SIZE;
-        }
+        // Jeśli nie ma kolizji, aktualizujemy pozycję gracza
+        transform.translation = new_position;
+        move_cooldown.last_move_time = time.elapsed(); // Zapisz czas ruchu
     }
 }
 
@@ -169,48 +178,57 @@ pub fn player_movement(
 pub fn player_push_system(
     mut queries: ParamSet<(
         Query<&Transform, With<Player>>,
-        Query<&mut Transform, With<Plague>>,
+        Query<&mut Transform, With<MovableElement>>,
         Query<&Transform, With<NotPassableForEnemy>>,
     )>,
     input: Res<ButtonInput<KeyCode>>,
 ) {
     if let Ok(player_transform) = queries.p0().get_single() {
+        let player_position = player_transform.translation; // Skopiuj pozycję gracza
         let mut push_direction = Vec3::ZERO;
 
         // Wykrywaj kierunek ruchu gracza
-        if input.just_pressed(KeyCode::KeyW) {
+        if input.pressed(KeyCode::KeyW) {
             push_direction = Vec3::new(0.0, 1.0, 0.0);
-        } else if input.just_pressed(KeyCode::KeyS) {
+        } else if input.pressed(KeyCode::KeyS) {
             push_direction = Vec3::new(0.0, -1.0, 0.0);
-        } else if input.just_pressed(KeyCode::KeyA) {
+        } else if input.pressed(KeyCode::KeyA) {
             push_direction = Vec3::new(-1.0, 0.0, 0.0);
-        } else if input.just_pressed(KeyCode::KeyD) {
+        } else if input.pressed(KeyCode::KeyD) {
             push_direction = Vec3::new(1.0, 0.0, 0.0);
         }
 
         if push_direction != Vec3::ZERO {
-            println!("wchodzę w push różny od 0");
-            let target_position = player_transform.translation + push_direction;
+            let target_position = player_position + TILE_SIZE * push_direction;
 
-            // Przechowaj przeszkody w wektorze, aby uniknąć jednoczesnego dostępu do `queries.p2()`
+            // Pobierz wszystkie pozycje przeszkód do wektora
             let obstacles: Vec<Vec3> = queries
                 .p2()
                 .iter()
-                .map(|obstacle| obstacle.translation)
+                .map(|obstacle_transform| obstacle_transform.translation)
                 .collect();
-            
-            // przechodzę przez całą tablicę not passable for enemy
-            for mut plague_transform in queries.p1().iter_mut() {
-                if (plague_transform.translation - target_position).length() < TILE_SIZE {
-                    let new_position = plague_transform.translation + push_direction;
 
+            // Iteruj przez obiekty `Plague`
+            for mut plague_transform in queries.p1().iter_mut() {
+                // Sprawdź, czy jest kolizja między graczem a obiektem typu `Plague`
+                if (plague_transform.translation.x - player_position.x).abs() + TRESHOLD < TILE_SIZE
+                && (plague_transform.translation.y - player_position.y).abs() + TRESHOLD < TILE_SIZE
+                 {
+                    println!("Kolizja z obiektem typu Plague");
+
+                    let new_position = plague_transform.translation + TILE_SIZE * push_direction;
+
+                    // Sprawdź, czy nowa pozycja koliduje z przeszkodami
                     let collision = obstacles.iter().any(|&obstacle| {
                         (obstacle - new_position).length() < TILE_SIZE
                     });
 
                     if !collision {
                         plague_transform.translation = new_position;
+                    } else {
+                        println!("Nie można przesunąć: kolizja z obiektem NotPassableForEnemy");
                     }
+
                     break;
                 }
             }
