@@ -10,7 +10,7 @@ pub const TRESHOLD: f32 = 1.0;
 
 impl Default for PushCooldownTimer {
     fn default() -> Self {
-        PushCooldownTimer(Timer::from_seconds(0.25, TimerMode::Repeating))
+        PushCooldownTimer(Timer::from_seconds(0.23, TimerMode::Repeating))
     }
 }
 pub fn setup_colision(mut commands: Commands) {
@@ -197,8 +197,8 @@ fn get_direction_from_input(keyboard_input: &Res<ButtonInput<KeyCode>>) -> Vec3 
 /// Funkcja sprawdza, czy nowa pozycja gracza koliduje z jakąkolwiek przeszkodą
 fn is_position_blocked(new_position: Vec3, not_walkable: &Query<&Transform, With<NotPassableForPlayer>>) -> bool {
     not_walkable.iter().any(|obstacle| {
-        (new_position.x - obstacle.translation.x).abs() < TILE_SIZE
-            && (new_position.y - obstacle.translation.y).abs() < TILE_SIZE
+        (new_position.x - obstacle.translation.x).abs() + TRESHOLD < TILE_SIZE
+            && (new_position.y - obstacle.translation.y).abs() + TRESHOLD < TILE_SIZE
     })
 }
 
@@ -254,11 +254,7 @@ pub fn player_push_system(
 
 /// Funkcja zwraca wektor kierunku na podstawie wciśniętych klawiszy
 fn get_push_direction(input: &Res<ButtonInput<KeyCode>>) -> Vec3 {
-    if input.pressed(KeyCode::KeyW) {
-        Vec3::new(0.0, 1.0, 0.0)
-    } else if input.pressed(KeyCode::KeyS) {
-        Vec3::new(0.0, -1.0, 0.0)
-    } else if input.pressed(KeyCode::KeyA) {
+    if input.pressed(KeyCode::KeyA) {
         Vec3::new(-1.0, 0.0, 0.0)
     } else if input.pressed(KeyCode::KeyD) {
         Vec3::new(1.0, 0.0, 0.0)
@@ -269,9 +265,11 @@ fn get_push_direction(input: &Res<ButtonInput<KeyCode>>) -> Vec3 {
 
 /// Funkcja sprawdzająca, czy pozycja obiektu koliduje z pozycją gracza
 fn is_colliding_with_player(player_position: &Vec3, movable_position: &Vec3) -> bool {
-    (movable_position.x - player_position.x).abs() + TRESHOLD < TILE_SIZE
-        && (movable_position.y - player_position.y).abs() + TRESHOLD < TILE_SIZE
+    let is_y_close = (movable_position.y - player_position.y).abs() < TRESHOLD;
+    let is_x_exact = movable_position.x == player_position.x;
+    is_y_close && is_x_exact
 }
+
 
 /// Funkcja sprawdzająca, czy nowa pozycja koliduje z jakąkolwiek przeszkodą
 fn is_colliding_with_obstacles(new_position: &Vec3, obstacles: &[Vec3]) -> bool {

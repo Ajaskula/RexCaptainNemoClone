@@ -2,162 +2,171 @@ use bevy::prelude::*;
 use crate::moveable_elements::components::*;
 use crate::*;
 
-pub const FALLING_SPEED: f32 = 0.6;
+pub const FALLING_SPEED: f32 = 1.2;
 pub const TRESHOLD: f32 = 1.0;
+
+fn get_movable_element(
+    position: Vec3,
+    image_path: &str,
+    movable_element: MovableElement,
+    asset_server: &Res<AssetServer>,
+) -> (
+    Sprite,
+    Transform,
+    MovableElement,
+    Explodable,
+    NotPassableForEnemy,
+    NotPassableForPlayer,
+) {
+    // Załaduj obrazek z zasobów
+    let image = asset_server.load(image_path);
+
+    // Przygotuj sprite z załadowanym obrazkiem i rozmiarem
+    let sprite = Sprite {
+        image: image.clone(),
+        custom_size: Some(Vec2::new(TILE_SIZE, TILE_SIZE)),
+        ..Default::default()
+    };
+
+    // Przygotuj transform z określoną pozycją
+    let transform = Transform::from_translation(position);
+
+    // Zwróć krotkę z wszystkimi komponentami do spawnu
+    (
+        sprite,
+        transform,
+        movable_element,
+        Explodable,
+        NotPassableForEnemy,
+        NotPassableForPlayer,
+    )
+}
+
+fn get_explosive_movable_element(
+    position: Vec3,
+    image_path: &str,
+    movable_element: MovableElement,
+    asset_server: &Res<AssetServer>,
+) -> (
+    Sprite,
+    Transform,
+    MovableElement,
+    Explodable,
+    NotPassableForEnemy,
+    NotPassableForPlayer,
+    Explosive, // Dodajemy Explosive
+) {
+    // Wywołanie funkcji get_movable_element
+    let (sprite, transform, element, explodable, not_passable_enemy, not_passable_player) =
+        get_movable_element(position, image_path, movable_element, asset_server);
+
+    // Zwrócenie krotki z dodatkowym komponentem Explosive
+    (
+        sprite,
+        transform,
+        element,
+        explodable,
+        not_passable_enemy,
+        not_passable_player,
+        Explosive, // Dodajemy Explosive do krotki
+    )
+}
+
+
 
 pub fn spawn_plague_l(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
-){
-
-    let image_rock = asset_server.load("textures/plagueL.png");
-    commands.spawn((
-        Sprite {
-            image:image_rock.clone(),
-            custom_size: Some(Vec2::new(TILE_SIZE, TILE_SIZE)),
-            ..Default::default()
-        },
-        Transform::from_translation(Vec3::new(13.0 * TILE_SIZE as f32, 3.0 * TILE_SIZE as f32, 0.0)),
-        MovableElement::PlagueL,
-        Explodable{},
-        NotPassableForEnemy,
-        NotPassableForPlayer,
-    ));
+) {
+    // Parametry dla obiektu
+    let position = Vec3::new(13.0 * TILE_SIZE as f32, 3.0 * TILE_SIZE as f32, 0.0);
+    let image_path = "textures/plagueL.png";
+    let movable_element = MovableElement::PlagueL;
+    // Spawnowanie obiektu w grze z przygotowanymi komponentami
+    commands.spawn(get_movable_element(position, image_path, movable_element, &asset_server));
 }
+
 
 pub fn spawn_plague_m(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
-){
+) {
+    // Parametry dla obiektu PlagueM
+    let position = Vec3::new(15.0 * TILE_SIZE as f32, 3.0 * TILE_SIZE as f32, 0.0);
+    let image_path = "textures/plagueM.png";
+    let movable_element = MovableElement::PlagueM;
 
-    let image_rock = asset_server.load("textures/plagueM.png");
-    commands.spawn((
-        Sprite {
-            image:image_rock.clone(),
-            custom_size: Some(Vec2::new(TILE_SIZE, TILE_SIZE)),
-            ..Default::default()
-        },
-        Transform::from_translation(Vec3::new(15.0 * TILE_SIZE as f32, 3.0 * TILE_SIZE as f32, 0.0)),
-        MovableElement::PlagueM,
-        Explodable{},
-        NotPassableForEnemy,
-        NotPassableForPlayer,
-    ));
+    // Przygotowanie komponentów i spawnowanie obiektu w grze
+    commands.spawn(get_movable_element(position, image_path, movable_element, &asset_server));
 }
 
 pub fn spawn_plague_r(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
-){
+) {
+    // Parametry dla obiektu PlagueR
+    let position = Vec3::new(17.0 * TILE_SIZE as f32, 3.0 * TILE_SIZE as f32, 0.0);
+    let image_path = "textures/plagueR.png";
+    let movable_element = MovableElement::PlagueR;
 
-    let image_rock = asset_server.load("textures/plagueR.png");
-    commands.spawn((
-        Sprite {
-            image:image_rock.clone(),
-            custom_size: Some(Vec2::new(TILE_SIZE, TILE_SIZE)),
-            ..Default::default()
-        },
-        Transform::from_translation(Vec3::new(17.0 * TILE_SIZE as f32, 3.0 * TILE_SIZE as f32, 0.0)),
-        MovableElement::PlagueR,
-        Explodable{},
-        NotPassableForEnemy,
-        NotPassableForPlayer,
-    ));
+    // Przygotowanie komponentów i spawnowanie obiektu w grze
+    commands.spawn(get_movable_element(position, image_path, movable_element, &asset_server));
 }
 
-pub fn spawn_rock(
+
+pub fn spawn_rocks(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
-){
+) {
+    // Określenie ścieżki do tekstury kamienia
+    let image_path = "textures/rock.png";
 
-    let image_rock = asset_server.load("textures/rock.png");
-    commands.spawn((
-        Sprite {
-            image:image_rock.clone(),
-            custom_size: Some(Vec2::new(TILE_SIZE, TILE_SIZE)),
-            ..Default::default()
-        },
-        Transform::from_translation(Vec3::new(9.0 * TILE_SIZE as f32, 3.0 * TILE_SIZE as f32, 0.0)),
-        MovableElement::Rock,
-        Explodable{},
-        NotPassableForEnemy,
-        NotPassableForPlayer,
-    ));
-    commands.spawn((
-        Sprite {
-            image:image_rock.clone(),
-            custom_size: Some(Vec2::new(TILE_SIZE, TILE_SIZE)),
-            ..Default::default()
-        },
-        Transform::from_translation(Vec3::new(20.0 * TILE_SIZE as f32, 3.0 * TILE_SIZE as f32, 0.0)),
-        MovableElement::Rock,
-        Explodable{},
-        NotPassableForEnemy,
-        NotPassableForPlayer,
-    ));
-    commands.spawn((
-        Sprite {
-            image:image_rock.clone(),
-            custom_size: Some(Vec2::new(TILE_SIZE, TILE_SIZE)),
-            ..Default::default()
-        },
-        Transform::from_translation(Vec3::new(20.0 * TILE_SIZE as f32, 4.0 * TILE_SIZE as f32, 0.0)),
-        MovableElement::Rock,
-        Explodable{},
-        NotPassableForEnemy,
-        NotPassableForPlayer,
-    ));
-    // commands.spawn((
-    //     Sprite {
-    //         image:image_rock.clone(),
-    //         custom_size: Some(Vec2::new(TILE_SIZE, TILE_SIZE)),
-    //         ..Default::default()
-    //     },
-    //     Transform::from_translation(Vec3::new(24.0 * TILE_SIZE as f32, 3.0 * TILE_SIZE as f32, 0.0)),
-    //     MovableElement::Rock,
-    //     Explodable{},
-    //     NotPassableForEnemy,
-    //     // NotPassableForPlayer,
-    // ));
-    // commands.spawn((
-    //     Sprite {
-    //         image:image_rock.clone(),
-    //         custom_size: Some(Vec2::new(TILE_SIZE, TILE_SIZE)),
-    //         ..Default::default()
-    //     },
-    //     Transform::from_translation(Vec3::new(24.0 * TILE_SIZE as f32, 4.0 * TILE_SIZE as f32, 0.0)),
-    //     MovableElement::Rock,
-    //     Explodable{},
-    //     NotPassableForEnemy,
-    //     // NotPassableForPlayer,
-    // ));
+    // Określenie liczby kolumn i wierszy oraz odległości między kamieniami
+    let num_columns = 5; // Liczba kolumn
+    let num_rows = 3;    // Liczba wierszy
+
+    // Odległość między kamieniami
+    let offset_x = TILE_SIZE as f32 * 2.0; // Odstęp w poziomie
+    let offset_y = TILE_SIZE as f32 * 2.0; // Odstęp w pionie
+
+    // Przesunięcie o 6 kratek w górę
+    let shift_up = TILE_SIZE as f32 * 6.0;
+
+    // Generowanie pozycji kamieni w układzie kolumnowym
+    for row in 0..num_rows {
+        for col in 0..num_columns {
+            let position = Vec3::new(
+                (col as f32 * offset_x), // X pozycja kamienia
+                (row as f32 * offset_y) + shift_up, // Y pozycja kamienia przesunięta o 6 kratek w górę
+                0.0, // Z pozycja (na poziomie 0)
+            );
+            // Spawnowanie kamienia w wygenerowanej pozycji
+            commands.spawn(get_movable_element(position, image_path, MovableElement::Rock, &asset_server));
+        }
+    }
 }
+
+
+
 
 
 
 pub fn spawn_falling_bomb(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
-){
-
-    let image_rock = asset_server.load("textures/bomb_falling.png");
-    commands.spawn((
-        Sprite {
-            image:image_rock.clone(),
-            custom_size: Some(Vec2::new(TILE_SIZE, TILE_SIZE)),
-            ..Default::default()
-        },
-        Transform::from_translation(Vec3::new(11.0 * TILE_SIZE as f32, 3.0 * TILE_SIZE as f32, 0.0)),
-        MovableElement::FallingBomb,
-        Explodable{},
-        NotPassableForEnemy,
-        NotPassableForPlayer,
-    ));
+) {
+    let position = Vec3::new(11.0 * TILE_SIZE as f32, 3.0 * TILE_SIZE as f32, 0.0);
+    let image_path = "textures/bomb_falling.png";
+    let movable_element = MovableElement::FallingBomb;
+    
+    // Spawnowanie obiektu z Explosive
+    commands.spawn(get_explosive_movable_element(position, image_path, movable_element, &asset_server));
 }
+
+
 
 pub fn moveable_elements_movement(
     mut plague_query: Query<(&mut Transform, &MovableElement)>,
-    time: Res<Time>,
     not_passable: Query<&Transform, (With<NotPassableForEnemy>, Without<MovableElement>)>,
 ) {
     let plague_positions: Vec<Vec3> = plague_query
@@ -250,87 +259,18 @@ pub fn spawn_rock_on_tower(
     // Obliczenie pozycji Y szczytu wież
     let tower_top_y = tower_base_y + tower_height * TILE_SIZE;
 
-    // Załadowanie tekstury Rock
-    let rock_texture = asset_server.load("textures/rock.png");
+    // Parametry do spawnowania
+    let image_path = "textures/rock.png";
+    let movable_element = MovableElement::Rock;
 
     // Tworzenie Rock na szczycie lewej wieży
-    commands.spawn((
-        Sprite {
-            image: rock_texture.clone(),
-            custom_size: Some(Vec2::new(TILE_SIZE, TILE_SIZE)),
-            ..Default::default()
-        },
-        Transform::from_translation(Vec3::new(left_tower_x, tower_top_y, 0.0)),
-        MovableElement::Rock, // Komponent Rock
-    ));
+    let position_left = Vec3::new(left_tower_x, tower_top_y, 0.0);
+    commands.spawn(get_movable_element(position_left, image_path, movable_element, &asset_server));
 
     // Tworzenie Rock na szczycie prawej wieży
-    commands.spawn((
-        Sprite {
-            image: rock_texture.clone(),
-            custom_size: Some(Vec2::new(TILE_SIZE, TILE_SIZE)),
-            ..Default::default()
-        },
-        Transform::from_translation(Vec3::new(right_tower_x, tower_top_y, 0.0)),
-        MovableElement::Rock, // Komponent Rock
-    ));
+    let position_right = Vec3::new(right_tower_x, tower_top_y, 0.0);
+    commands.spawn(get_movable_element(position_right, image_path, movable_element, &asset_server));
 }
 
 
-// pub fn falling_bomb_explosion(
-//     mut commands: Commands,
-//     mut falling_bomb_query: Query<(&mut Transform, &mut MovableElement, Entity), With<FallingBomb>>,
-//     time: Res<Time>,
-//     not_passable: Query<&Transform, With<NotPassableForEnemy>>,
-//     mut colision_debounce: ResMut<ColisionDebounce>, // Timer do kontroli częstotliwości kolizji
-//     asset_server: Res<AssetServer>,
-// ) {
-//     for (mut transform, mut movable_element, entity) in falling_bomb_query.iter_mut() {
-//         // Sprawdzanie, czy bomba spadła na coś
-//         let mut collision = false;
-//         let mut has_fallen = false;
 
-//         // Debounce, aby zapobiec wielokrotnemu sprawdzeniu kolizji w krótkim czasie
-//         colision_debounce.timer.tick(time.delta());
-
-//         // Sprawdzamy kolizję z innymi obiektami (np. przeszkodami)
-//         for obstacle in not_passable.iter() {
-//             if (transform.translation.x - obstacle.translation.x).abs() < TILE_SIZE
-//                 && (transform.translation.y - obstacle.translation.y).abs() < TILE_SIZE
-//             {
-//                 collision = true;
-//                 break; // Jeśli znajdziemy kolizję, przerywamy
-//             }
-//         }
-
-//         // Jeśli bomba nie jest w ruchu, nie sprawdzamy jej kolizji
-//         if movable_element.is_in_motion {
-//             // Sprawdzenie, czy nie leży na czymś już od początku gry (nie wybucha)
-//             if !collision && !colision_debounce.timer.finished() {
-//                 continue; // Jeśli nie ma kolizji i bomba nie miała jeszcze kontaktu, kontynuujemy
-//             }
-
-//             if collision {
-//                 // Przestań się ruszać
-//                 movable_element.is_in_motion = false; // Zatrzymujemy ruch
-
-//                 // Spawnuje eksplozję
-//                 commands.spawn((
-//                     Sprite {
-//                         image: asset_server.load("textures/explosion.png"), // Tutaj możesz podać odpowiednią teksturę wybuchu
-//                         custom_size: Some(Vec2::new(TILE_SIZE, TILE_SIZE)),
-//                         ..Default::default()
-//                     },
-//                     Transform::from_translation(transform.translation),
-//                     Explosion, // Komponent wybuchu
-//                 ));
-
-//                 // Zdejmujemy `FallingBomb` z ruchu i usuwamy ją po wybuchu
-//                 commands.entity(entity).despawn();
-
-//                 // Resetowanie timera
-//                 colision_debounce.timer.reset();
-//             }
-//         } 
-//     }
-// }

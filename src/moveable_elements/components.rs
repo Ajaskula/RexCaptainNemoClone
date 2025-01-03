@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-#[derive(Component)]
+#[derive(Component, Copy, Clone)]
 pub enum MovableElement {
     PlagueL,
     PlagueM,

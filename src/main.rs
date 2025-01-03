@@ -50,7 +50,7 @@ fn main() {
     .add_systems(Startup, spawn_player)
     .add_systems(Startup, setup_colision)
     .add_systems(Startup, spawn_solid_walls)
-    .add_systems(Startup, spawn_rock)
+    .add_systems(Startup, spawn_rocks)
     .add_systems(Startup, spawn_falling_bomb)
     .add_systems(Startup, spawn_plague_l)
     .add_systems(Startup, spawn_plague_m)
