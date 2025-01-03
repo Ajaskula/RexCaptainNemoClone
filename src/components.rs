@@ -13,10 +13,10 @@ pub struct NotPassableForPlayer;
 
 
 #[derive(Component)]
-pub struct Explosive {}
+pub struct Explosive;
 
 #[derive(Component)]
-pub struct Explodable{}
+pub struct Explodable;
 
 #[derive(Component)]
-pub struct PlantedBomb{}
+pub struct PlantedBomb;

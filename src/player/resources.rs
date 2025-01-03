@@ -10,3 +10,6 @@ pub struct ColisionDebounce {
 pub struct PlayerMoveCooldown {
     pub last_move_time: Duration,
 }
+
+#[derive(Resource)]
+pub struct PushCooldownTimer(pub Timer);

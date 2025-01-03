@@ -5,73 +5,66 @@ use crate::*;
 pub fn spawn_dirt(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
-    window_query: Query<&Window, With<PrimaryWindow>>
-){
-
+    window_query: Query<&Window, With<PrimaryWindow>>,
+) {
     let window = window_query.get_single().unwrap();
-    let num_walls = 15;
-    // let mut rng = rand::thread_rng();
     let image_bomb = asset_server.load("textures/dirt.png");
-    // for x in 0..num_walls {
-    //     // let x = rng.gen_range(0..=(window.width() / TILE_SIZE) as usize) * TILE_SIZE as usize;
-    //     // let y = rng.gen_range(0..=(window.height() / TILE_SIZE) as usize) * TILE_SIZE as usize;
-    //     commands.spawn((
-    //         Sprite {
-    //             image:image_bomb.clone(),
-    //             custom_size: Some(Vec2::new(TILE_SIZE, TILE_SIZE)),
-    //             ..Default::default()
-    //         },
-    //         Transform::from_translation(Vec3::new(24.0 * TILE_SIZE as f32, 4.0 * TILE_SIZE as f32, 0.0)),
-    //         Dirt{},
-    //         Explodable{}
-    //     )
-    // );
-    // }
+
+    // Dolne pozycje filarów
+    let left_tower_base_x = 23.0 * TILE_SIZE as f32;
+    let right_tower_base_x = 25.0 * TILE_SIZE as f32;
+    let tower_base_y = -17.0 * TILE_SIZE as f32;
+
+    // Wysokość wież
+    let tower_height = 5;
+
+    // Tworzenie wieży po lewej stronie
+    for i in 0..tower_height {
+        commands.spawn((
+            Sprite {
+                image: image_bomb.clone(),
+                custom_size: Some(Vec2::new(TILE_SIZE, TILE_SIZE)),
+                ..Default::default()
+            },
+            Transform::from_translation(Vec3::new(left_tower_base_x, tower_base_y + i as f32 * TILE_SIZE as f32, 0.0)),
+            Dirt {},
+            Explodable {},
+            NotPassableForEnemy,
+        ));
+    }
+
+    // Tworzenie wieży po prawej stronie
+    for i in 0..tower_height {
+        commands.spawn((
+            Sprite {
+                image: image_bomb.clone(),
+                custom_size: Some(Vec2::new(TILE_SIZE, TILE_SIZE)),
+                ..Default::default()
+            },
+            Transform::from_translation(Vec3::new(right_tower_base_x, tower_base_y + i as f32 * TILE_SIZE as f32, 0.0)),
+            Dirt {},
+            Explodable {},
+            NotPassableForEnemy,
+        ));
+    }
+
+    // Tworzenie bloku na szczycie pomiędzy wieżami
+    let middle_block_y = tower_base_y + (tower_height as f32 - 1.0) * TILE_SIZE as f32; // Wysokość bloku pomiędzy
+    let middle_block_x = (left_tower_base_x + right_tower_base_x) / 2.0; // Środkowa pozycja X
+
     commands.spawn((
         Sprite {
-            image:image_bomb.clone(),
+            image: image_bomb.clone(),
             custom_size: Some(Vec2::new(TILE_SIZE, TILE_SIZE)),
             ..Default::default()
         },
-        Transform::from_translation(Vec3::new(25.0 * TILE_SIZE as f32, -16.0 * TILE_SIZE as f32, 0.0)),
-        Dirt{},
-        Explodable{},
-        NotPassableForEnemy,
-    ));
-    commands.spawn((
-        Sprite {
-            image:image_bomb.clone(),
-            custom_size: Some(Vec2::new(TILE_SIZE, TILE_SIZE)),
-            ..Default::default()
-        },
-        Transform::from_translation(Vec3::new(25.0 * TILE_SIZE as f32, -17.0 * TILE_SIZE as f32, 0.0)),
-        Dirt{},
-        Explodable{},
-        NotPassableForEnemy,
-    ));
-    commands.spawn((
-        Sprite {
-            image:image_bomb.clone(),
-            custom_size: Some(Vec2::new(TILE_SIZE, TILE_SIZE)),
-            ..Default::default()
-        },
-        Transform::from_translation(Vec3::new(23.0 * TILE_SIZE as f32, -16.0 * TILE_SIZE as f32, 0.0)),
-        Dirt{},
-        Explodable{},
-        NotPassableForEnemy,
-    ));
-    commands.spawn((
-        Sprite {
-            image:image_bomb.clone(),
-            custom_size: Some(Vec2::new(TILE_SIZE, TILE_SIZE)),
-            ..Default::default()
-        },
-        Transform::from_translation(Vec3::new(23.0 * TILE_SIZE as f32, -17.0 * TILE_SIZE as f32, 0.0)),
-        Dirt{},
-        Explodable{},
+        Transform::from_translation(Vec3::new(middle_block_x, middle_block_y, 0.0)),
+        Dirt {},
+        Explodable {},
         NotPassableForEnemy,
     ));
 }
+
 
 pub fn spawn_full_dirt_rectangles(
     mut commands: Commands,

@@ -4,6 +4,9 @@ use bevy_audio::PlaybackMode;
 use crate::player::components::Player;
 use crate::components::Lifetime;
 use crate::components::Explodable;
+use crate::NotPassableForEnemy;
+use crate::bomb::systems::EXPLOSION_RANGE;
+use crate::components::PlantedBomb;
 
 // rozmiar kafelka mapy
 pub const TILE_SIZE: f32 = 40.0;
@@ -13,6 +16,24 @@ pub fn spawn_camera(
 ) { 
     commands.spawn(
         (Camera2d,
+    )
+    );
+}
+
+pub fn spawn_exit(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+){
+    let image = asset_server.load("textures/gate.png");
+    commands.spawn((
+        Sprite {
+            image: image,
+            custom_size: Some(Vec2::new(TILE_SIZE, TILE_SIZE)),
+            ..Default::default()
+        },
+        Transform::from_translation(Vec3::new(17.0 * TILE_SIZE, 17.0 * TILE_SIZE, 1.0)), 
+        Explodable{},
+        NotPassableForEnemy
     )
     );
 }
@@ -107,5 +128,43 @@ pub fn explodable_lifetime_system(
 }
 
 
-// Odtwarzanie muzyki z ustawieniami odtwarzania
-// audio_player.play(music_handle.clone(), playback_settings);
+pub fn explosive_lifetime_system(
+    mut commands: Commands,
+    time: Res<Time>,
+    mut query: Query<(Entity, &mut Lifetime, &Transform), With<PlantedBomb>>, // Encje bombowe z `Lifetime` i `Transform`
+    mut query_explodable: Query<(Entity, &Transform), With<Explodable>>, // Encje eksplodowalne z `Transform`
+) {
+    // przechodzę przez podłożone bomby
+    for (entity, mut lifetime, bomb_transform) in query.iter_mut() {
+
+        // Zmniejszam czas ich życia
+        lifetime.timer.tick(time.delta());
+
+        // Jeśli bomba powinna wybuchnąć
+        if lifetime.timer.finished() {
+            
+            // despawnuje pombę
+            commands.entity(entity).despawn();
+            // println!("Wybucham bombę!");
+
+            // znajduje wszystkie elementy w zasięgu
+            let explosion_range = EXPLOSION_RANGE * TILE_SIZE; 
+            
+            // przechodzę przez wysadzalne elementy w otoczeniu
+            for (explodable_entity, explodable_transform) in query_explodable.iter_mut() {
+                let distance = bomb_transform
+                    .translation
+                    .distance(explodable_transform.translation);
+                
+                // jeśli są one wystarczająco blisko, to do konkrentej encji dodaje lifetime
+                if distance <= explosion_range {
+                    // Dodaj `Lifetime` do eksplodowalnych elementów
+                    commands.entity(explodable_entity).insert(Lifetime {
+                        timer: Timer::from_seconds(0.2, TimerMode::Once), // Dajemy im np. 2 sekundy istnienia
+                    });
+                }
+            }
+            // TODO dopisz podmienianie rzeczy w zasięgu, na planted bomb
+        }
+    }
+}

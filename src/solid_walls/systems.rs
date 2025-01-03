@@ -1,78 +1,52 @@
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
-// use super::systems::*;
 use crate::*;
 
-pub fn spawn_solid_walls_h(
-    mut commands: Commands,
-    asset_server: Res<AssetServer>,
-    window_query: Query<&Window, With<PrimaryWindow>>
-) {
-
-    let window = window_query.get_single().unwrap();
-    for x in (0.. 2 * window.width() as usize + TILE_SIZE as usize).step_by(TILE_SIZE as usize) {
-        let solid_wall_image = asset_server.load("textures/solid_wall.png");
-        commands.spawn((
-            Sprite {
-                image:solid_wall_image.clone(),
-                custom_size: Some(Vec2::new(TILE_SIZE, TILE_SIZE)),
-                ..Default::default()
-            },
-            Transform::from_translation(Vec3::new(x as f32 - window.width(), -window.height(), 0.0)),
-            GlobalTransform::default(),
-            NotPassableForEnemy,
-            NotPassableForPlayer,
-        )
-        );
-        commands.spawn((
-            Sprite {
-                image:solid_wall_image.clone(),
-                custom_size: Some(Vec2::new(TILE_SIZE, TILE_SIZE)),
-                ..Default::default()
-            },
-            Transform::from_translation(Vec3::new(x as f32 - window.width(), window.height(), 0.0)),
-            GlobalTransform::default(),
-            NotPassableForEnemy,
-            NotPassableForPlayer
-        )
-        );
-        
-    }
+fn create_solid_wall_sprite(image: Handle<Image>, position: Vec3) -> (Sprite, Transform, GlobalTransform, NotPassableForEnemy, NotPassableForPlayer) {
+    (
+        Sprite {
+            image,
+            custom_size: Some(Vec2::splat(TILE_SIZE)),
+            ..Default::default()
+        },
+        Transform::from_translation(position),
+        GlobalTransform::default(),
+        NotPassableForEnemy,
+        NotPassableForPlayer,
+    )
 }
 
-pub fn spawn_solid_walls_v(
+pub fn spawn_solid_walls(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
-    window_query: Query<&Window, With<PrimaryWindow>>
+    window_query: Query<&Window, With<PrimaryWindow>>,
 ) {
+    let window = window_query.single();
+    let solid_wall_image = asset_server.load("textures/solid_wall.png");
+    let half_width = window.width();
+    let half_height = window.height();
 
-    let window = window_query.get_single().unwrap();
-    for y in (0.. 2 * window.height() as usize + TILE_SIZE as usize).step_by(TILE_SIZE as usize) {
-        let solid_wall_image = asset_server.load("textures/solid_wall.png");
-        commands.spawn((
-            Sprite {
-                image:solid_wall_image.clone(),
-                custom_size: Some(Vec2::new(TILE_SIZE, TILE_SIZE)),
-                ..Default::default()
-            },
-            Transform::from_translation(Vec3::new(window.width(), y as f32 - window.height(), 0.0)),
-            GlobalTransform::default(),
-            NotPassableForEnemy,
-            NotPassableForPlayer
-        )
-        );
-        commands.spawn((
-            Sprite {
-                image:solid_wall_image.clone(),
-                custom_size: Some(Vec2::new(TILE_SIZE, TILE_SIZE)),
-                ..Default::default()
-            },
-            Transform::from_translation(Vec3::new(-window.width(), y as f32 - window.height(), 0.0)),
-            GlobalTransform::default(),
-            NotPassableForEnemy,
-            NotPassableForPlayer
-        )
-        );
-        
+    // Tworzenie poziomych ścian (góra i dół)
+    for x in (-half_width as isize..=half_width as isize)
+        .step_by(TILE_SIZE as usize)
+        .map(|x| x as f32)
+    {
+        let top_position = Vec3::new(x, half_height, 0.0);
+        let bottom_position = Vec3::new(x, -half_height, 0.0);
+
+        commands.spawn(create_solid_wall_sprite(solid_wall_image.clone(), top_position));
+        commands.spawn(create_solid_wall_sprite(solid_wall_image.clone(), bottom_position));
+    }
+
+    // Tworzenie pionowych ścian (lewo i prawo)
+    for y in (-half_height as isize..=half_height as isize)
+        .step_by(TILE_SIZE as usize)
+        .map(|y| y as f32)
+    {
+        let left_position = Vec3::new(-half_width, y, 0.0);
+        let right_position = Vec3::new(half_width, y, 0.0);
+
+        commands.spawn(create_solid_wall_sprite(solid_wall_image.clone(), left_position));
+        commands.spawn(create_solid_wall_sprite(solid_wall_image.clone(), right_position));
     }
 }

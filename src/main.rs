@@ -40,15 +40,16 @@ fn main() {
     .insert_resource(PlayerMoveCooldown {
         last_move_time: Duration::from_secs(0),
     })
+    .insert_resource(PushCooldownTimer::default())
     .add_plugins(DefaultPlugins)
-    .add_plugins(FrameTimeDiagnosticsPlugin::default())
-    .add_plugins(LogDiagnosticsPlugin::default())
+    // .add_plugins(FrameTimeDiagnosticsPlugin::default())
+    // .add_plugins(LogDiagnosticsPlugin::default())
     .add_systems(Startup, spawn_camera)
     .add_systems(Startup, play_background_music)
     .add_systems(Startup, set_background)
     .add_systems(Startup, spawn_player)
     .add_systems(Startup, setup_colision)
-    .add_systems(Startup, (spawn_solid_walls_v, spawn_solid_walls_h))
+    .add_systems(Startup, spawn_solid_walls)
     .add_systems(Startup, spawn_rock)
     .add_systems(Startup, spawn_falling_bomb)
     .add_systems(Startup, spawn_plague_l)
@@ -56,11 +57,14 @@ fn main() {
     .add_systems(Startup, spawn_plague_r)
     // .add_systems(Startup, spawn_walls)
     .add_systems(Startup, spawn_dirt)
+    .add_systems(Startup, spawn_rock_on_tower)
     .add_systems(Startup, spawn_full_dirt_rectangles)
     .add_systems(Startup, spawn_wall_rectangles)
     .add_systems(Startup, setup_bomb)
     .add_systems(Startup, spawn_bombs)
+    .add_systems(Startup, spawn_enemy)
     .add_systems(Startup, spawn_enemies)
+    .add_systems(Startup, spawn_exit)
     .add_systems(Update, player_movement)
     .add_systems(Update, update_camera)
     .add_systems(Update, player_dig_dirt)
@@ -74,63 +78,6 @@ fn main() {
     // .add_systems(Update, falling_bomb_movement)
     .add_systems(Update, moveable_elements_movement)
     .add_systems(Update, player_push_system)
+    .add_systems(Update, enemy_hit_moveable_element)
     .run();
 }
-
-
-fn explosive_lifetime_system(
-    mut commands: Commands,
-    time: Res<Time>,
-    mut query: Query<(Entity, &mut Lifetime, &Transform), With<PlantedBomb>>, // Encje bombowe z `Lifetime` i `Transform`
-    mut query_explodable: Query<(Entity, &Transform), With<Explodable>>, // Encje eksplodowalne z `Transform`
-) {
-    // przechodzę przez podłożone bomby
-    for (entity, mut lifetime, bomb_transform) in query.iter_mut() {
-        // Zmniejsz czas życia
-        lifetime.timer.tick(time.delta());
-        if lifetime.timer.finished() {
-            // Usuń bombę, gdy czas się skończy
-            commands.entity(entity).despawn();
-            // println!("Wybucham bombę!");
-
-            // Znajdź wszystkie elementy w zasięgu
-            let explosion_range = EXPLOSION_RANGE * TILE_SIZE; 
-
-            for (explodable_entity, explodable_transform) in query_explodable.iter_mut() {
-                let distance = bomb_transform
-                    .translation
-                    .distance(explodable_transform.translation);
-
-                if distance <= explosion_range {
-                    // Dodaj `Lifetime` do eksplodowalnych elementów
-                    commands.entity(explodable_entity).insert(Lifetime {
-                        timer: Timer::from_seconds(0.2, TimerMode::Once), // Dajemy im np. 2 sekundy istnienia
-                    });
-                    // println!(
-                    // "Dodano eksplodujący efekt dla encji {:?}, odległość: {:.2}",
-                    //     explodable_entity, distance
-                    // );
-                }
-            }
-        }
-    }
-}
-
-
-
-// przechodzę przez wszystkie wysadzalne elementy z lifetimami
-// fn explodable_lifetime_system(
-//     mut commands: Commands,
-//     time: Res<Time>,
-//     mut query: Query<(Entity, &mut Lifetime, &Explodable)>, // Dodajemy `Explodable` do query
-// ) {
-//     for (entity, mut lifetime, _explodable) in query.iter_mut() {
-//         // Zmniejsz czas życia
-//         lifetime.timer.tick(time.delta());
-//         if lifetime.timer.finished() {
-//             // Usuń element, gdy czas się skończy
-//             commands.entity(entity).despawn();
-//             println!("Wysadzam wysadzalny element {:?}", entity);
-//         }
-//     }
-// }

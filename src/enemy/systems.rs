@@ -4,6 +4,8 @@ use rand::Rng;
 
 
 use crate::enemy::components::Enemy;
+use crate::moveable_elements::components::*;
+use crate::player::resources::*;
 
 pub const ENEMY_SPEED: f32 = 50.0;
 
@@ -57,6 +59,39 @@ pub fn spawn_enemies(
     }
 }
 
+pub fn spawn_enemy(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+) {
+    // Pozycje X wież z funkcji spawn_dirt
+    let left_tower_x = 23.0 * TILE_SIZE as f32;
+    let right_tower_x = 25.0 * TILE_SIZE as f32;
+    let tower_base_y = -17.0 * TILE_SIZE as f32;
+
+    // Obliczenie pozycji startowej dla Enemy
+    let enemy_start_x = (left_tower_x + right_tower_x) / 2.0;
+    let enemy_start_y = tower_base_y + TILE_SIZE; // Tuż nad podstawą wież
+
+    // Załadowanie tekstury Enemy
+    let enemy_texture = asset_server.load("textures/mumionek.png");
+
+    // Tworzenie Enemy
+    commands.spawn((
+        Sprite {
+            image: enemy_texture.clone(),
+            custom_size: Some(Vec2::new(TILE_SIZE, TILE_SIZE)),
+            ..Default::default()
+        },
+        Transform::from_translation(Vec3::new(enemy_start_x, enemy_start_y, 0.0)),
+        Enemy {
+            num: 0,
+            direction: Vec2::new(0.0, -1.0), // Początkowy kierunek Enemy (np. w dół)
+        },
+        NotPassableForPlayer,
+        Explodable{},
+        Explosive{}, // Enemy powinno blokować gracza
+    ));
+}
 
 
 
@@ -93,3 +128,51 @@ pub fn enemy_movement(
     }
 }
 
+// 
+pub fn enemy_hit_moveable_element(
+    mut commands: Commands,
+    falling_query: Query<&Transform, With<MovableElement>>,
+    enemy_query: Query<(&Transform, Entity), With<Enemy>>,
+    asset_server: Res<AssetServer>,
+    mut collision_debounce: ResMut<ColisionDebounce>,
+    time: Res<Time>,
+) {
+    // Przechodzimy przez wszystkie spadające elementy
+    for falling_transform in falling_query.iter() {
+        for (enemy_transform, enemy_entity) in enemy_query.iter() {
+            // Sprawdzamy, czy spadający element jest nad przeciwnikiem
+            let is_above = (falling_transform.translation.x - enemy_transform.translation.x).abs() < TILE_SIZE
+                && (falling_transform.translation.y > enemy_transform.translation.y)
+                && (falling_transform.translation.y - enemy_transform.translation.y).abs() < TILE_SIZE;
+
+            collision_debounce.timer.tick(time.delta());
+            if collision_debounce.timer.finished() && is_above {
+                // Zniszcz przeciwnika
+                commands// spawnuje bombe w podanej lokalizacji
+                .spawn((
+                    Sprite {
+                        // image: asset_server.load("textures/bomb.png").clone(),
+                        custom_size: Some(Vec2::new(TILE_SIZE, TILE_SIZE)),
+                        ..Default::default()
+                    },
+                    Transform::from_translation(Vec3::new(
+                        enemy_transform.translation.x,
+                        enemy_transform.translation.y,
+                        0.0,
+                    )),
+                    PlantedBomb {},
+                ))// dokładam do tego sprite lifetime z timerem
+                .insert(Lifetime {
+                    timer: Timer::from_seconds(0.0, TimerMode::Once),
+                });
+                // commands.spawn(
+                //     AudioPlayer::new(
+                //         asset_server.load("audio/exploded_oneself.ogg"),
+                //     )
+                // );
+
+                collision_debounce.timer.reset();
+            }
+        }
+    }
+}

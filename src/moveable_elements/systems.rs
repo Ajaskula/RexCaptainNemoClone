@@ -21,7 +21,7 @@ pub fn spawn_plague_l(
         MovableElement::PlagueL,
         Explodable{},
         NotPassableForEnemy,
-        // NotPassableForPlayer,
+        NotPassableForPlayer,
     ));
 }
 
@@ -41,7 +41,7 @@ pub fn spawn_plague_m(
         MovableElement::PlagueM,
         Explodable{},
         NotPassableForEnemy,
-        // NotPassableForPlayer,
+        NotPassableForPlayer,
     ));
 }
 
@@ -61,7 +61,7 @@ pub fn spawn_plague_r(
         MovableElement::PlagueR,
         Explodable{},
         NotPassableForEnemy,
-        // NotPassableForPlayer,
+        NotPassableForPlayer,
     ));
 }
 
@@ -81,7 +81,7 @@ pub fn spawn_rock(
         MovableElement::Rock,
         Explodable{},
         NotPassableForEnemy,
-        // NotPassableForPlayer,
+        NotPassableForPlayer,
     ));
     commands.spawn((
         Sprite {
@@ -93,7 +93,7 @@ pub fn spawn_rock(
         MovableElement::Rock,
         Explodable{},
         NotPassableForEnemy,
-        // NotPassableForPlayer,
+        NotPassableForPlayer,
     ));
     commands.spawn((
         Sprite {
@@ -105,7 +105,7 @@ pub fn spawn_rock(
         MovableElement::Rock,
         Explodable{},
         NotPassableForEnemy,
-        // NotPassableForPlayer,
+        NotPassableForPlayer,
     ));
     // commands.spawn((
     //     Sprite {
@@ -151,7 +151,7 @@ pub fn spawn_falling_bomb(
         MovableElement::FallingBomb,
         Explodable{},
         NotPassableForEnemy,
-        // NotPassableForPlayer,
+        NotPassableForPlayer,
     ));
 }
 
@@ -160,136 +160,177 @@ pub fn moveable_elements_movement(
     time: Res<Time>,
     not_passable: Query<&Transform, (With<NotPassableForEnemy>, Without<MovableElement>)>,
 ) {
-    // Zbierz pozycje wszystkich elementów `MovableElement`
     let plague_positions: Vec<Vec3> = plague_query
         .iter()
         .map(|(transform, _)| transform.translation)
         .collect();
 
-    // Iteruj przez `plague_query` z numeracją indeksów
     for (index, (mut transform, _)) in plague_query.iter_mut().enumerate() {
         let mut collision = false;
         let direction = Vec3::new(0.0, -1.0, 0.0);
         let new_position = transform.translation + direction * FALLING_SPEED;
 
-        // Sprawdź kolizję z `NotPassableForEnemy`
         for obstacle in not_passable.iter() {
             if ((new_position.x - obstacle.translation.x).abs() < TILE_SIZE)
                 && ((new_position.y - obstacle.translation.y).abs() <= TILE_SIZE)
             {
                 collision = true;
-                println!(
-                    "Kolizja z przeszkodą: Element na pozycji {:?} z przeszkodą na {:?}",
-                    new_position, obstacle.translation
-                );
                 break;
             }
         }
 
-        // Sprawdź kolizję z innymi `MovableElement`, ale nie z sobą samym
         for (other_index, other_position) in plague_positions.iter().enumerate() {
             if index != other_index
                 && (new_position.x - other_position.x).abs() < TILE_SIZE
                 && (new_position.y - other_position.y).abs() <= TILE_SIZE
             {
                 collision = true;
-                println!(
-                    "Kolizja z innym elementem: Element na pozycji {:?} i element na pozycji {:?}",
-                    new_position, other_position
-                );
                 break;
             }
         }
 
-        // Jeśli nie ma kolizji, przesuń element
         if !collision {
             transform.translation = new_position;
         } else {
-
-            println!("sprawdzam czy da się przesunąć w bok");
-            // Jeśli element jest ustawiony nad innym, przesuń go w bok
             let mut is_stacked = false;
             for (other_index, other_position) in plague_positions.iter().enumerate() {
-                // Obliczanie wartości logicznych dla poszczególnych części warunku
-                let x_check = (transform.translation.x - other_position.x).abs() < TILE_SIZE;
-                let y_check = (transform.translation.y - other_position.y).abs() <= TILE_SIZE + TRESHOLD;
-                let is_above = transform.translation.y > other_position.y;
-            
-                // Wypisywanie pozycji porównywanych elementów oraz wyników części warunku
-                println!(
-                    "Porównywanie elementu o pozycji {:?} (index {}) z elementem o pozycji {:?} (index {}):",
-                    transform.translation, index, other_position, other_index
-                );
-                println!(
-                    "  x_check = {} (|{} - {}| = {})",
-                    x_check,
-                    transform.translation.x,
-                    other_position.x,
-                    (transform.translation.x - other_position.x).abs()
-                );
-                println!(
-                    "  y_check = {} (|{} - {}| = {})",
-                    y_check,
-                    transform.translation.y,
-                    other_position.y,
-                    (transform.translation.y - other_position.y).abs()
-                );
-                println!(
-                    "  is_above = {} ({} > {})",
-                    is_above,
-                    transform.translation.y,
-                    other_position.y
-                );
-            
-                // Sprawdzenie głównego warunku
                 if index != other_index
-                    && x_check
-                    && y_check
-                    && is_above
+                    && (transform.translation.x - other_position.x).abs() < TILE_SIZE
+                    && (transform.translation.y - other_position.y).abs() <= TILE_SIZE + TRESHOLD
+                    && transform.translation.y > other_position.y
                 {
                     is_stacked = true;
-                    println!(
-                        "Element na pozycji {:?} jest ustawiony nad elementem na pozycji {:?}",
-                        transform.translation, other_position
-                    );
                     break;
                 }
             }
-            
-            
 
-            // Jeśli element jest ustawiony nad innym, przesuń go w bok
             if is_stacked {
                 let left_position = transform.translation + Vec3::new(-TILE_SIZE, 0.0, 0.0);
                 let right_position = transform.translation + Vec3::new(TILE_SIZE, 0.0, 0.0);
+                let below_left = left_position + Vec3::new(0.0, -TILE_SIZE, 0.0);
+                let below_right = right_position + Vec3::new(0.0, -TILE_SIZE, 0.0);
 
                 let can_move_left = !not_passable.iter().any(|obstacle| {
                     (obstacle.translation - left_position).length() < TILE_SIZE
+                        || (obstacle.translation - below_left).length() < TILE_SIZE
                 }) && !plague_positions.iter().any(|&other_position| {
                     (other_position - left_position).length() < TILE_SIZE
+                        || (other_position - below_left).length() < TILE_SIZE
                 });
 
                 let can_move_right = !not_passable.iter().any(|obstacle| {
                     (obstacle.translation - right_position).length() < TILE_SIZE
+                        || (obstacle.translation - below_right).length() < TILE_SIZE
                 }) && !plague_positions.iter().any(|&other_position| {
                     (other_position - right_position).length() < TILE_SIZE
+                        || (other_position - below_right).length() < TILE_SIZE
                 });
 
-                // Przesuń w lewo lub w prawo, jeśli możliwe
                 if can_move_left {
                     transform.translation = left_position;
-                    println!(
-                        "Element na pozycji {:?} przesunięty na lewo na {:?}",
-                        transform.translation, left_position
-                    );
                 } else if can_move_right {
                     transform.translation = right_position;
-                    println!(
-                        "Element na pozycji {:?} przesunięty na prawo na {:?}",
-                        transform.translation, right_position
-                    );
                 }
             }
         }
     }
 }
+
+
+pub fn spawn_rock_on_tower(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+) {
+    // Pozycje X wież z funkcji spawn_dirt
+    let left_tower_x = 23.0 * TILE_SIZE as f32;
+    let right_tower_x = 25.0 * TILE_SIZE as f32;
+    let tower_height = 5.0; // Wysokość wieży
+    let tower_base_y = -17.0 * TILE_SIZE as f32;
+
+    // Obliczenie pozycji Y szczytu wież
+    let tower_top_y = tower_base_y + tower_height * TILE_SIZE;
+
+    // Załadowanie tekstury Rock
+    let rock_texture = asset_server.load("textures/rock.png");
+
+    // Tworzenie Rock na szczycie lewej wieży
+    commands.spawn((
+        Sprite {
+            image: rock_texture.clone(),
+            custom_size: Some(Vec2::new(TILE_SIZE, TILE_SIZE)),
+            ..Default::default()
+        },
+        Transform::from_translation(Vec3::new(left_tower_x, tower_top_y, 0.0)),
+        MovableElement::Rock, // Komponent Rock
+    ));
+
+    // Tworzenie Rock na szczycie prawej wieży
+    commands.spawn((
+        Sprite {
+            image: rock_texture.clone(),
+            custom_size: Some(Vec2::new(TILE_SIZE, TILE_SIZE)),
+            ..Default::default()
+        },
+        Transform::from_translation(Vec3::new(right_tower_x, tower_top_y, 0.0)),
+        MovableElement::Rock, // Komponent Rock
+    ));
+}
+
+
+// pub fn falling_bomb_explosion(
+//     mut commands: Commands,
+//     mut falling_bomb_query: Query<(&mut Transform, &mut MovableElement, Entity), With<FallingBomb>>,
+//     time: Res<Time>,
+//     not_passable: Query<&Transform, With<NotPassableForEnemy>>,
+//     mut colision_debounce: ResMut<ColisionDebounce>, // Timer do kontroli częstotliwości kolizji
+//     asset_server: Res<AssetServer>,
+// ) {
+//     for (mut transform, mut movable_element, entity) in falling_bomb_query.iter_mut() {
+//         // Sprawdzanie, czy bomba spadła na coś
+//         let mut collision = false;
+//         let mut has_fallen = false;
+
+//         // Debounce, aby zapobiec wielokrotnemu sprawdzeniu kolizji w krótkim czasie
+//         colision_debounce.timer.tick(time.delta());
+
+//         // Sprawdzamy kolizję z innymi obiektami (np. przeszkodami)
+//         for obstacle in not_passable.iter() {
+//             if (transform.translation.x - obstacle.translation.x).abs() < TILE_SIZE
+//                 && (transform.translation.y - obstacle.translation.y).abs() < TILE_SIZE
+//             {
+//                 collision = true;
+//                 break; // Jeśli znajdziemy kolizję, przerywamy
+//             }
+//         }
+
+//         // Jeśli bomba nie jest w ruchu, nie sprawdzamy jej kolizji
+//         if movable_element.is_in_motion {
+//             // Sprawdzenie, czy nie leży na czymś już od początku gry (nie wybucha)
+//             if !collision && !colision_debounce.timer.finished() {
+//                 continue; // Jeśli nie ma kolizji i bomba nie miała jeszcze kontaktu, kontynuujemy
+//             }
+
+//             if collision {
+//                 // Przestań się ruszać
+//                 movable_element.is_in_motion = false; // Zatrzymujemy ruch
+
+//                 // Spawnuje eksplozję
+//                 commands.spawn((
+//                     Sprite {
+//                         image: asset_server.load("textures/explosion.png"), // Tutaj możesz podać odpowiednią teksturę wybuchu
+//                         custom_size: Some(Vec2::new(TILE_SIZE, TILE_SIZE)),
+//                         ..Default::default()
+//                     },
+//                     Transform::from_translation(transform.translation),
+//                     Explosion, // Komponent wybuchu
+//                 ));
+
+//                 // Zdejmujemy `FallingBomb` z ruchu i usuwamy ją po wybuchu
+//                 commands.entity(entity).despawn();
+
+//                 // Resetowanie timera
+//                 colision_debounce.timer.reset();
+//             }
+//         } 
+//     }
+// }
