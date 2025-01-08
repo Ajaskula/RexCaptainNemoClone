@@ -5,11 +5,9 @@ pub struct BombCount {
     pub value: u32,
 }
 
-impl Default for BombCount{
+impl Default for BombCount {
     fn default() -> Self {
-        BombCount {
-            value: 0
-        }
+        BombCount { value: 0 }
     }
 }
 
@@ -17,4 +15,3 @@ impl Default for BombCount{
 pub struct BombDebounce {
     pub timer: Timer,
 }
-

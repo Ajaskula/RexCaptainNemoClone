@@ -1,8 +1,17 @@
+use crate::*;
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
-use crate::*;
 
-fn create_solid_wall_sprite(image: Handle<Image>, position: Vec3) -> (Sprite, Transform, GlobalTransform, NotPassableForEnemy, NotPassableForPlayer) {
+fn create_solid_wall_sprite(
+    image: Handle<Image>,
+    position: Vec3,
+) -> (
+    Sprite,
+    Transform,
+    GlobalTransform,
+    NotPassableForEnemy,
+    NotPassableForPlayer,
+) {
     (
         Sprite {
             image,
@@ -34,8 +43,14 @@ pub fn spawn_solid_walls(
         let top_position = Vec3::new(x, half_height, 0.0);
         let bottom_position = Vec3::new(x, -half_height, 0.0);
 
-        commands.spawn(create_solid_wall_sprite(solid_wall_image.clone(), top_position));
-        commands.spawn(create_solid_wall_sprite(solid_wall_image.clone(), bottom_position));
+        commands.spawn(create_solid_wall_sprite(
+            solid_wall_image.clone(),
+            top_position,
+        ));
+        commands.spawn(create_solid_wall_sprite(
+            solid_wall_image.clone(),
+            bottom_position,
+        ));
     }
 
     // Tworzenie pionowych ścian (lewo i prawo)
@@ -46,7 +61,13 @@ pub fn spawn_solid_walls(
         let left_position = Vec3::new(-half_width, y, 0.0);
         let right_position = Vec3::new(half_width, y, 0.0);
 
-        commands.spawn(create_solid_wall_sprite(solid_wall_image.clone(), left_position));
-        commands.spawn(create_solid_wall_sprite(solid_wall_image.clone(), right_position));
+        commands.spawn(create_solid_wall_sprite(
+            solid_wall_image.clone(),
+            left_position,
+        ));
+        commands.spawn(create_solid_wall_sprite(
+            solid_wall_image.clone(),
+            right_position,
+        ));
     }
 }

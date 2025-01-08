@@ -1,29 +1,21 @@
+use crate::bomb::systems::EXPLOSION_RANGE;
+use crate::components::Explodable;
+use crate::components::Lifetime;
+use crate::components::PlantedBomb;
+use crate::player::components::Player;
+use crate::NotPassableForEnemy;
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
 use bevy_audio::PlaybackMode;
-use crate::player::components::Player;
-use crate::components::Lifetime;
-use crate::components::Explodable;
-use crate::NotPassableForEnemy;
-use crate::bomb::systems::EXPLOSION_RANGE;
-use crate::components::PlantedBomb;
 
 // rozmiar kafelka mapy
 pub const TILE_SIZE: f32 = 40.0;
 
-pub fn spawn_camera(
-    mut commands : Commands,
-) { 
-    commands.spawn(
-        (Camera2d,
-    )
-    );
+pub fn spawn_camera(mut commands: Commands) {
+    commands.spawn((Camera2d,));
 }
 
-pub fn spawn_exit(
-    mut commands: Commands,
-    asset_server: Res<AssetServer>,
-){
+pub fn spawn_exit(mut commands: Commands, asset_server: Res<AssetServer>) {
     let image = asset_server.load("textures/gate.png");
     commands.spawn((
         Sprite {
@@ -31,59 +23,48 @@ pub fn spawn_exit(
             custom_size: Some(Vec2::new(TILE_SIZE, TILE_SIZE)),
             ..Default::default()
         },
-        Transform::from_translation(Vec3::new(17.0 * TILE_SIZE, 17.0 * TILE_SIZE, 1.0)), 
-        Explodable{},
-        NotPassableForEnemy
-    )
-    );
+        Transform::from_translation(Vec3::new(17.0 * TILE_SIZE, 17.0 * TILE_SIZE, 1.0)),
+        Explodable {},
+        NotPassableForEnemy,
+    ));
 }
 
-
 pub fn set_background(
-    mut commands : Commands,
+    mut commands: Commands,
     asset_server: Res<AssetServer>,
-    window_query: Query<&Window, With<PrimaryWindow>>
+    window_query: Query<&Window, With<PrimaryWindow>>,
 ) {
-
     let window = window_query.get_single().unwrap();
     for x in (0..2 * window.width() as usize).step_by(TILE_SIZE as usize) {
         for y in (0..2 * window.height() as usize).step_by(TILE_SIZE as usize) {
-
             let empty_tile_image: Handle<Image> = asset_server.load("textures/empty.png");
-            commands.spawn(
-                (Sprite {
+            commands.spawn((
+                Sprite {
                     image: empty_tile_image,
                     custom_size: Some(Vec2::new(TILE_SIZE, TILE_SIZE)),
                     ..Default::default()
                 },
                 Transform {
-                    translation: Vec3::new(x as f32 - window.width(), y as f32 - window.height(), -1.0),
+                    translation: Vec3::new(
+                        x as f32 - window.width(),
+                        y as f32 - window.height(),
+                        -1.0,
+                    ),
                     ..Default::default()
-                }
-            )
-            );
+                },
+            ));
         }
     }
-
 }
 
-
-
-pub fn play_background_music(
-    mut commands: Commands,
-    asset_server: Res<AssetServer>,
-) { 
+pub fn play_background_music(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn((
-        AudioPlayer::new(
-            asset_server.load("audio/egipt.ogg"),
-        ),
-    
+        AudioPlayer::new(asset_server.load("audio/egipt.ogg")),
         PlaybackSettings {
             mode: PlaybackMode::Loop,
             ..Default::default()
-        }
-    )
-    );
+        },
+    ));
 }
 
 pub fn update_camera(
@@ -91,7 +72,6 @@ pub fn update_camera(
     player: Query<&Transform, (With<Player>, Without<Camera2d>)>,
     time: Res<Time>,
 ) {
-
     let Ok(mut camera) = camera.get_single_mut() else {
         return;
     };
@@ -110,7 +90,6 @@ pub fn update_camera(
         .smooth_nudge(&direction, 2.0, time.delta_secs());
 }
 
-
 pub fn explodable_lifetime_system(
     mut commands: Commands,
     time: Res<Time>,
@@ -127,7 +106,6 @@ pub fn explodable_lifetime_system(
     }
 }
 
-
 pub fn explosive_lifetime_system(
     mut commands: Commands,
     time: Res<Time>,
@@ -136,26 +114,24 @@ pub fn explosive_lifetime_system(
 ) {
     // przechodzę przez podłożone bomby
     for (entity, mut lifetime, bomb_transform) in query.iter_mut() {
-
         // Zmniejszam czas ich życia
         lifetime.timer.tick(time.delta());
 
         // Jeśli bomba powinna wybuchnąć
         if lifetime.timer.finished() {
-            
             // despawnuje pombę
             commands.entity(entity).despawn();
             // println!("Wybucham bombę!");
 
             // znajduje wszystkie elementy w zasięgu
-            let explosion_range = EXPLOSION_RANGE * TILE_SIZE; 
-            
+            let explosion_range = EXPLOSION_RANGE * TILE_SIZE;
+
             // przechodzę przez wysadzalne elementy w otoczeniu
             for (explodable_entity, explodable_transform) in query_explodable.iter_mut() {
                 let distance = bomb_transform
                     .translation
                     .distance(explodable_transform.translation);
-                
+
                 // jeśli są one wystarczająco blisko, to do konkrentej encji dodaje lifetime
                 if distance <= explosion_range {
                     // Dodaj `Lifetime` do eksplodowalnych elementów

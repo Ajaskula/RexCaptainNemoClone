@@ -11,7 +11,6 @@ pub struct NotPassableForEnemy;
 #[derive(Component)]
 pub struct NotPassableForPlayer;
 
-
 #[derive(Component)]
 pub struct Explosive;
 

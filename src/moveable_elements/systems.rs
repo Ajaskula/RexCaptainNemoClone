@@ -1,6 +1,6 @@
-use bevy::prelude::*;
 use crate::moveable_elements::components::*;
 use crate::*;
+use bevy::prelude::*;
 
 pub const FALLING_SPEED: f32 = 1.2;
 pub const TRESHOLD: f32 = 1.0;
@@ -72,58 +72,57 @@ fn get_explosive_movable_element(
     )
 }
 
-
-
-pub fn spawn_plague_l(
-    mut commands: Commands,
-    asset_server: Res<AssetServer>,
-) {
+pub fn spawn_plague_l(mut commands: Commands, asset_server: Res<AssetServer>) {
     // Parametry dla obiektu
     let position = Vec3::new(13.0 * TILE_SIZE as f32, 3.0 * TILE_SIZE as f32, 0.0);
     let image_path = "textures/plagueL.png";
     let movable_element = MovableElement::PlagueL;
     // Spawnowanie obiektu w grze z przygotowanymi komponentami
-    commands.spawn(get_movable_element(position, image_path, movable_element, &asset_server));
+    commands.spawn(get_movable_element(
+        position,
+        image_path,
+        movable_element,
+        &asset_server,
+    ));
 }
 
-
-pub fn spawn_plague_m(
-    mut commands: Commands,
-    asset_server: Res<AssetServer>,
-) {
+pub fn spawn_plague_m(mut commands: Commands, asset_server: Res<AssetServer>) {
     // Parametry dla obiektu PlagueM
     let position = Vec3::new(15.0 * TILE_SIZE as f32, 3.0 * TILE_SIZE as f32, 0.0);
     let image_path = "textures/plagueM.png";
     let movable_element = MovableElement::PlagueM;
 
     // Przygotowanie komponentów i spawnowanie obiektu w grze
-    commands.spawn(get_movable_element(position, image_path, movable_element, &asset_server));
+    commands.spawn(get_movable_element(
+        position,
+        image_path,
+        movable_element,
+        &asset_server,
+    ));
 }
 
-pub fn spawn_plague_r(
-    mut commands: Commands,
-    asset_server: Res<AssetServer>,
-) {
+pub fn spawn_plague_r(mut commands: Commands, asset_server: Res<AssetServer>) {
     // Parametry dla obiektu PlagueR
     let position = Vec3::new(17.0 * TILE_SIZE as f32, 3.0 * TILE_SIZE as f32, 0.0);
     let image_path = "textures/plagueR.png";
     let movable_element = MovableElement::PlagueR;
 
     // Przygotowanie komponentów i spawnowanie obiektu w grze
-    commands.spawn(get_movable_element(position, image_path, movable_element, &asset_server));
+    commands.spawn(get_movable_element(
+        position,
+        image_path,
+        movable_element,
+        &asset_server,
+    ));
 }
 
-
-pub fn spawn_rocks(
-    mut commands: Commands,
-    asset_server: Res<AssetServer>,
-) {
+pub fn spawn_rocks(mut commands: Commands, asset_server: Res<AssetServer>) {
     // Określenie ścieżki do tekstury kamienia
     let image_path = "textures/rock.png";
 
     // Określenie liczby kolumn i wierszy oraz odległości między kamieniami
     let num_columns = 5; // Liczba kolumn
-    let num_rows = 3;    // Liczba wierszy
+    let num_rows = 3; // Liczba wierszy
 
     // Odległość między kamieniami
     let offset_x = TILE_SIZE as f32 * 2.0; // Odstęp w poziomie
@@ -136,34 +135,34 @@ pub fn spawn_rocks(
     for row in 0..num_rows {
         for col in 0..num_columns {
             let position = Vec3::new(
-                (col as f32 * offset_x), // X pozycja kamienia
+                (col as f32 * offset_x),            // X pozycja kamienia
                 (row as f32 * offset_y) + shift_up, // Y pozycja kamienia przesunięta o 6 kratek w górę
-                0.0, // Z pozycja (na poziomie 0)
+                0.0,                                // Z pozycja (na poziomie 0)
             );
             // Spawnowanie kamienia w wygenerowanej pozycji
-            commands.spawn(get_movable_element(position, image_path, MovableElement::Rock, &asset_server));
+            commands.spawn(get_movable_element(
+                position,
+                image_path,
+                MovableElement::Rock,
+                &asset_server,
+            ));
         }
     }
 }
 
-
-
-
-
-
-pub fn spawn_falling_bomb(
-    mut commands: Commands,
-    asset_server: Res<AssetServer>,
-) {
+pub fn spawn_falling_bomb(mut commands: Commands, asset_server: Res<AssetServer>) {
     let position = Vec3::new(11.0 * TILE_SIZE as f32, 3.0 * TILE_SIZE as f32, 0.0);
     let image_path = "textures/bomb_falling.png";
     let movable_element = MovableElement::FallingBomb;
-    
+
     // Spawnowanie obiektu z Explosive
-    commands.spawn(get_explosive_movable_element(position, image_path, movable_element, &asset_server));
+    commands.spawn(get_explosive_movable_element(
+        position,
+        image_path,
+        movable_element,
+        &asset_server,
+    ));
 }
-
-
 
 pub fn moveable_elements_movement(
     mut plague_query: Query<(&mut Transform, &MovableElement)>,
@@ -245,11 +244,7 @@ pub fn moveable_elements_movement(
     }
 }
 
-
-pub fn spawn_rock_on_tower(
-    mut commands: Commands,
-    asset_server: Res<AssetServer>,
-) {
+pub fn spawn_rock_on_tower(mut commands: Commands, asset_server: Res<AssetServer>) {
     // Pozycje X wież z funkcji spawn_dirt
     let left_tower_x = 23.0 * TILE_SIZE as f32;
     let right_tower_x = 25.0 * TILE_SIZE as f32;
@@ -265,12 +260,19 @@ pub fn spawn_rock_on_tower(
 
     // Tworzenie Rock na szczycie lewej wieży
     let position_left = Vec3::new(left_tower_x, tower_top_y, 0.0);
-    commands.spawn(get_movable_element(position_left, image_path, movable_element, &asset_server));
+    commands.spawn(get_movable_element(
+        position_left,
+        image_path,
+        movable_element,
+        &asset_server,
+    ));
 
     // Tworzenie Rock na szczycie prawej wieży
     let position_right = Vec3::new(right_tower_x, tower_top_y, 0.0);
-    commands.spawn(get_movable_element(position_right, image_path, movable_element, &asset_server));
+    commands.spawn(get_movable_element(
+        position_right,
+        image_path,
+        movable_element,
+        &asset_server,
+    ));
 }
-
-
-

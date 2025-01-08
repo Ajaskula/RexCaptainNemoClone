@@ -1,6 +1,6 @@
+use crate::*;
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
-use crate::*;
 
 pub fn spawn_dirt(
     mut commands: Commands,
@@ -26,7 +26,11 @@ pub fn spawn_dirt(
                 custom_size: Some(Vec2::new(TILE_SIZE, TILE_SIZE)),
                 ..Default::default()
             },
-            Transform::from_translation(Vec3::new(left_tower_base_x, tower_base_y + i as f32 * TILE_SIZE as f32, 0.0)),
+            Transform::from_translation(Vec3::new(
+                left_tower_base_x,
+                tower_base_y + i as f32 * TILE_SIZE as f32,
+                0.0,
+            )),
             Dirt {},
             Explodable {},
             NotPassableForEnemy,
@@ -41,7 +45,11 @@ pub fn spawn_dirt(
                 custom_size: Some(Vec2::new(TILE_SIZE, TILE_SIZE)),
                 ..Default::default()
             },
-            Transform::from_translation(Vec3::new(right_tower_base_x, tower_base_y + i as f32 * TILE_SIZE as f32, 0.0)),
+            Transform::from_translation(Vec3::new(
+                right_tower_base_x,
+                tower_base_y + i as f32 * TILE_SIZE as f32,
+                0.0,
+            )),
             Dirt {},
             Explodable {},
             NotPassableForEnemy,
@@ -65,7 +73,6 @@ pub fn spawn_dirt(
     ));
 }
 
-
 pub fn spawn_full_dirt_rectangles(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
@@ -76,10 +83,7 @@ pub fn spawn_full_dirt_rectangles(
     let tile_size = TILE_SIZE;
 
     // Lista prostokątów do wygenerowania: (start_x, start_y, width, height)
-    let rectangles = vec![
-        (5.0, 5.0, 8.0, 6.0),
-        (15.0, 10.0, 10.0, 5.0),
-    ];
+    let rectangles = vec![(5.0, 5.0, 8.0, 6.0), (15.0, 10.0, 10.0, 5.0)];
 
     for (start_x, start_y, width, height) in rectangles {
         for x in 0..(width as usize) {
@@ -95,14 +99,16 @@ pub fn spawn_full_dirt_rectangles(
                         custom_size: Some(Vec2::new(tile_size, tile_size)),
                         ..Default::default()
                     },
-                    Transform::from_translation(Vec3::new(world_x + 20.0*TILE_SIZE, world_y+20.0*TILE_SIZE, 0.0)),
-                    Dirt {},          // Oznaczamy jako Dirt
-                    Explodable {},    // Może być eksplodowane
+                    Transform::from_translation(Vec3::new(
+                        world_x + 20.0 * TILE_SIZE,
+                        world_y + 20.0 * TILE_SIZE,
+                        0.0,
+                    )),
+                    Dirt {},       // Oznaczamy jako Dirt
+                    Explodable {}, // Może być eksplodowane
                     NotPassableForEnemy,
                 ));
             }
         }
     }
 }
-
-

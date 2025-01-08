@@ -1,12 +1,11 @@
-use bevy::prelude::*;
-use crate::*;
 use crate::enemy::components::Enemy;
-use player::resources::*;
 use crate::moveable_elements::components::MovableElement;
+use crate::*;
+use bevy::prelude::*;
+use player::resources::*;
 
 pub const PLAYER_SPEED: f32 = 1.8;
 pub const TRESHOLD: f32 = 1.0;
-
 
 impl Default for PushCooldownTimer {
     fn default() -> Self {
@@ -19,11 +18,7 @@ pub fn setup_colision(mut commands: Commands) {
     });
 }
 
-pub fn spawn_player(
-    mut commands: Commands,
-    asset_server: Res<AssetServer>,
-) {
-
+pub fn spawn_player(mut commands: Commands, asset_server: Res<AssetServer>) {
     let player_image = asset_server.load("textures/kretes.png");
     commands.spawn((
         Sprite {
@@ -31,13 +26,12 @@ pub fn spawn_player(
             custom_size: Some(Vec2::new(TILE_SIZE, TILE_SIZE)),
             ..Default::default()
         },
-        Transform::from_translation(Vec3::new(0.0, 0.0, 1.0)), 
+        Transform::from_translation(Vec3::new(0.0, 0.0, 1.0)),
         GlobalTransform::default(),
         Player,
         Explodable,
-        NotPassableForEnemy
-    )
-    );
+        NotPassableForEnemy,
+    ));
 }
 
 pub fn player_dig_dirt(
@@ -69,19 +63,24 @@ fn is_within_hit_range(player_transform: &Transform, enemy_transform: &Transform
         && (enemy_transform.translation.y - player_transform.translation.y).abs() < TILE_SIZE
 }
 
-fn spawn_planted_bomb(commands: &mut Commands, enemy_transform: &Transform, asset_server: &Res<AssetServer>) {
-    commands.spawn((
-        create_planted_bomb_sprite(),
-        Transform::from_translation(Vec3::new(
-            enemy_transform.translation.x,
-            enemy_transform.translation.y,
-            0.0,
-        )),
-        PlantedBomb,
-    ))
-    .insert(Lifetime {
-        timer: Timer::from_seconds(0.0, TimerMode::Once),
-    });
+fn spawn_planted_bomb(
+    commands: &mut Commands,
+    enemy_transform: &Transform,
+    asset_server: &Res<AssetServer>,
+) {
+    commands
+        .spawn((
+            create_planted_bomb_sprite(),
+            Transform::from_translation(Vec3::new(
+                enemy_transform.translation.x,
+                enemy_transform.translation.y,
+                0.0,
+            )),
+            PlantedBomb,
+        ))
+        .insert(Lifetime {
+            timer: Timer::from_seconds(0.0, TimerMode::Once),
+        });
 
     commands.spawn(AudioPlayer::new(
         asset_server.load("audio/exploded_oneself.ogg"),
@@ -118,10 +117,8 @@ pub fn player_collect_bomb(
 ) {
     // Sprawdzamy, czy gracz jest obecny w scenie
     if let Ok(player_transform) = player_query.get_single() {
-        
         // Iterujemy przez wszystkie bomby
         for (bomb_entity, bomb_transform) in bomb_query.iter() {
-
             // Sprawdzamy, czy gracz znajduje się w pobliżu bomby
             if is_within_pickup_range(player_transform, bomb_transform) {
                 // Zwiększamy liczbę bomb i usuwamy bombę z gry
@@ -134,7 +131,10 @@ pub fn player_collect_bomb(
 
 /// Funkcja pomocnicza sprawdzająca, czy gracz jest wystarczająco blisko bomby
 fn is_within_pickup_range(player_transform: &Transform, bomb_transform: &Transform) -> bool {
-    let player_pos = Vec2::new(player_transform.translation.x, player_transform.translation.y);
+    let player_pos = Vec2::new(
+        player_transform.translation.x,
+        player_transform.translation.y,
+    );
     let bomb_pos = Vec2::new(bomb_transform.translation.x, bomb_transform.translation.y);
     player_pos.distance(bomb_pos) < TILE_SIZE
 }
@@ -195,25 +195,26 @@ fn get_direction_from_input(keyboard_input: &Res<ButtonInput<KeyCode>>) -> Vec3 
 }
 
 /// Funkcja sprawdza, czy nowa pozycja gracza koliduje z jakąkolwiek przeszkodą
-fn is_position_blocked(new_position: Vec3, not_walkable: &Query<&Transform, With<NotPassableForPlayer>>) -> bool {
+fn is_position_blocked(
+    new_position: Vec3,
+    not_walkable: &Query<&Transform, With<NotPassableForPlayer>>,
+) -> bool {
     not_walkable.iter().any(|obstacle| {
         (new_position.x - obstacle.translation.x).abs() + TRESHOLD < TILE_SIZE
             && (new_position.y - obstacle.translation.y).abs() + TRESHOLD < TILE_SIZE
     })
 }
 
-
 pub fn player_push_system(
     mut queries: ParamSet<(
-        Query<&Transform, With<Player>>, // Gracz
-        Query<&mut Transform, With<MovableElement>>, // Elementy, które mogą być przesuwane
+        Query<&Transform, With<Player>>,              // Gracz
+        Query<&mut Transform, With<MovableElement>>,  // Elementy, które mogą być przesuwane
         Query<&Transform, With<NotPassableForEnemy>>, // Przeszkody, które blokują ruch
     )>,
     input: Res<ButtonInput<KeyCode>>, // Wejście z klawiatury
     mut cooldown_timer: ResMut<PushCooldownTimer>, // Timer do opóźnienia przepychania
-    time: Res<Time>, // Czas, który będzie potrzebny do zaktualizowania timera
+    time: Res<Time>,                  // Czas, który będzie potrzebny do zaktualizowania timera
 ) {
-
     // Sprawdzamy, czy timer upłynął
     cooldown_timer.0.tick(time.delta());
     if !cooldown_timer.0.finished() {
@@ -222,14 +223,17 @@ pub fn player_push_system(
 
     // znajduje gracza
     if let Ok(player_transform) = queries.p0().get_single() {
-
         // pobieram pozycje gracza
         let push_direction = get_push_direction(&input); // Określ kierunek ruchu gracza
         let player_position = player_transform.translation + TILE_SIZE * push_direction;
 
         if push_direction != Vec3::ZERO {
             // Pobieramy przeszkody tylko raz
-            let obstacles: Vec<Vec3> = queries.p2().iter().map(|obstacle| obstacle.translation).collect();
+            let obstacles: Vec<Vec3> = queries
+                .p2()
+                .iter()
+                .map(|obstacle| obstacle.translation)
+                .collect();
 
             // Iteruj przez obiekty, które można przesuwać
             for mut movable_transform in queries.p1().iter_mut() {
@@ -270,8 +274,9 @@ fn is_colliding_with_player(player_position: &Vec3, movable_position: &Vec3) -> 
     is_y_close && is_x_exact
 }
 
-
 /// Funkcja sprawdzająca, czy nowa pozycja koliduje z jakąkolwiek przeszkodą
 fn is_colliding_with_obstacles(new_position: &Vec3, obstacles: &[Vec3]) -> bool {
-    obstacles.iter().any(|&obstacle| (obstacle - *new_position).length() < TILE_SIZE)
+    obstacles
+        .iter()
+        .any(|&obstacle| (obstacle - *new_position).length() < TILE_SIZE)
 }
