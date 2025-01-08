@@ -69,6 +69,7 @@ fn main() {
         .add_systems(Update, player_dig_dirt)
         .add_systems(Update, player_collect_bomb)
         .add_systems(Update, plant_bomb_system)
+        .add_systems(Update, remove_explosion_sprite)
         .add_systems(Update, explosive_lifetime_system)
         .add_systems(Update, explodable_lifetime_system)
         .add_systems(Update, enemy_movement)

@@ -1,3 +1,4 @@
+use crate::bomb::components::ExplosionVisual;
 use crate::bomb::systems::EXPLOSION_RANGE;
 use crate::components::Explodable;
 use crate::components::Lifetime;
@@ -106,25 +107,65 @@ pub fn explodable_lifetime_system(
     }
 }
 
+pub fn remove_explosion_sprite(
+    mut commands: Commands,
+    time: Res<Time>,
+    mut query: Query<(Entity, &mut Lifetime), With<ExplosionVisual>>,
+) {
+    for (entity, mut lifetime) in &mut query {
+        lifetime.timer.tick(time.delta());
+        if lifetime.timer.finished() {
+            commands.entity(entity).despawn();
+        }
+    }
+}
+
 pub fn explosive_lifetime_system(
     mut commands: Commands,
+    asset_server: Res<AssetServer>,
     time: Res<Time>,
     mut query: Query<(Entity, &mut Lifetime, &Transform), With<PlantedBomb>>, // Encje bombowe z `Lifetime` i `Transform`
     mut query_explodable: Query<(Entity, &Transform), With<Explodable>>, // Encje eksplodowalne z `Transform`
+    mut radius: Query<(Entity, &Transform)>,
 ) {
     // przechodzę przez podłożone bomby
-    for (entity, mut lifetime, bomb_transform) in query.iter_mut() {
+    for (bomb_entity, mut bomb_lifetime, bomb_transform) in query.iter_mut() {
         // Zmniejszam czas ich życia
-        lifetime.timer.tick(time.delta());
+        bomb_lifetime.timer.tick(time.delta());
 
         // Jeśli bomba powinna wybuchnąć
-        if lifetime.timer.finished() {
+        if bomb_lifetime.timer.finished() {
             // despawnuje pombę
-            commands.entity(entity).despawn();
+            commands.entity(bomb_entity).despawn();
             // println!("Wybucham bombę!");
 
             // znajduje wszystkie elementy w zasięgu
             let explosion_range = EXPLOSION_RANGE * TILE_SIZE;
+
+            for (_, radius_transform) in &mut radius {
+                if bomb_transform
+                    .translation
+                    .distance(radius_transform.translation)
+                    <= explosion_range
+                {
+                    commands.spawn((
+                        ExplosionVisual,
+                        Sprite {
+                            image: asset_server.load("textures/explosion.png"),
+                            custom_size: Some(Vec2::new(TILE_SIZE, TILE_SIZE)),
+                            ..Default::default()
+                        },
+                        Lifetime {
+                            timer: Timer::from_seconds(1.0, Default::default()),
+                        },
+                        Transform::from_translation(Vec3::new(
+                            radius_transform.translation.x,
+                            radius_transform.translation.y,
+                            2.0,
+                        )),
+                    ));
+                }
+            }
 
             // przechodzę przez wysadzalne elementy w otoczeniu
             for (explodable_entity, explodable_transform) in query_explodable.iter_mut() {
