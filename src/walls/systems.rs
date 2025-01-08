@@ -62,7 +62,6 @@ pub fn spawn_wall_rectangles(
     let half_window_width = window.width() / 2.0;
     let half_window_height = window.height() / 2.0;
 
-    // Definicje prostokątów: (x_start, y_start, width, height)
     let rectangles = [(5.0, 5.0, 10.0, 6.0), (15.0, 10.0, 8.0, 4.0)];
 
     for &(start_x, start_y, width, height) in &rectangles {

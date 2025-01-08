@@ -1,78 +1,64 @@
 use bevy::prelude::*;
 use rand::Rng;
 
-use crate::bomb::config::BOMB_TIMER_SECONDS;
+use crate::bomb::config::{BOMB_DEBOUNCE_SECONDS, BOMB_TIMER_SECONDS};
 use crate::bomb::resources::BombDebounce;
 use crate::*;
 
-pub const EXPLOSION_RANGE: f32 = 2.0;
-
-// podkłada wrzuca timer dotyczący czasu, po którym można podłożyć następną bombę
 pub fn setup_bomb(mut commands: Commands) {
     commands.insert_resource(BombDebounce {
-        timer: Timer::from_seconds(0.3, TimerMode::Once), // 0.3 sekundy na debounce
+        timer: Timer::from_seconds(BOMB_DEBOUNCE_SECONDS, TimerMode::Once),
     });
 }
 
-// system podkładania bomb
 pub fn plant_bomb_system(
     mut commands: Commands,
     keyboard_input: Res<ButtonInput<KeyCode>>,
-    mut bomb_count: ResMut<BombCount>,       // Zasób licznika bomb
-    mut bomb_debounce: ResMut<BombDebounce>, // Timer debouncera
+    mut bomb_count: ResMut<BombCount>,
+    mut bomb_debounce: ResMut<BombDebounce>,
     time: Res<Time>,
-    transform_query: Query<&Transform, With<Player>>, // Pobieramy pozycję gracza
-    asset_server: Res<AssetServer>,                   // Zasób obrazu bomby
+    player_position: Query<&Transform, With<Player>>,
+    asset_server: Res<AssetServer>,
 ) {
-    // Aktualizuj timer, który pozwala na podrzucanie kolejnych bomb
     bomb_debounce.timer.tick(time.delta());
 
-    // sprawdzam czy mogę podrzucić kolejną bombę
     if keyboard_input.pressed(KeyCode::Space)
         && bomb_count.value > 0
         && bomb_debounce.timer.finished()
     {
-        // podkładam kolejną bombę
-        bomb_count.value -= 1;
-        // znajduje pozycje gracza
-        if let Ok(transform) = transform_query.get_single() {
-            commands // spawnuje bombe w podanej lokalizacji
-                .spawn((
-                    Sprite {
-                        image: asset_server.load("textures/bomb.png").clone(),
-                        custom_size: Some(Vec2::new(TILE_SIZE, TILE_SIZE)),
-                        ..Default::default()
-                    },
-                    Transform::from_translation(Vec3::new(
-                        transform.translation.x,
-                        transform.translation.y,
-                        0.0,
-                    )),
-                    PlantedBomb {},
-                )) // dokładam do tego sprite lifetime z timerem
-                .insert(Lifetime {
+        if let Ok(transform) = player_position.get_single() {
+            commands.spawn((
+                PlantedBomb,
+                Sprite {
+                    image: asset_server.load("textures/bomb.png").clone(),
+                    custom_size: Some(Vec2::new(TILE_SIZE, TILE_SIZE)),
+                    ..Default::default()
+                },
+                Transform::from_translation(Vec3::new(
+                    transform.translation.x,
+                    transform.translation.y,
+                    0.0,
+                )),
+                Lifetime {
                     timer: Timer::from_seconds(BOMB_TIMER_SECONDS, TimerMode::Once),
-                });
+                },
+            ));
+            bomb_count.value -= 1;
 
             let random_number = rand::thread_rng().gen_range(0..2);
-
             if random_number == 0 {
-                // Spawnuj pierwsze audio
                 commands.spawn(AudioPlayer::new(asset_server.load("audio/run.ogg")));
             } else {
-                // Spawnuj drugie audio
                 commands.spawn(AudioPlayer::new(
                     asset_server.load("audio/explosion_soon.ogg"),
                 ));
             }
 
-            // po podłożeniu bomby resetuje timer
             bomb_debounce.timer.reset();
         }
     }
 }
 
-// rozkłada bomby na mapie w dosyć losowy sposób
 pub fn spawn_bombs(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
@@ -85,6 +71,7 @@ pub fn spawn_bombs(
     // let x = rng.gen_range(0..=(window.width() / TILE_SIZE) as usize) * TILE_SIZE as usize;
     // let y = rng.gen_range(0..=(window.height() / TILE_SIZE) as usize) * TILE_SIZE as usize;
     commands.spawn((
+        Bomb {},
         Sprite {
             image: image_wall.clone(),
             custom_size: Some(Vec2::new(TILE_SIZE, TILE_SIZE)),
@@ -95,9 +82,9 @@ pub fn spawn_bombs(
             TILE_SIZE * 5.0 + window.height() / 2.0,
             0.0,
         )),
-        Bomb {},
     ));
     commands.spawn((
+        Bomb {},
         Sprite {
             image: image_wall.clone(),
             custom_size: Some(Vec2::new(TILE_SIZE, TILE_SIZE)),
@@ -108,9 +95,9 @@ pub fn spawn_bombs(
             TILE_SIZE * 5.0 + window.height() / 2.0,
             0.0,
         )),
-        Bomb {},
     ));
     commands.spawn((
+        Bomb {},
         Sprite {
             image: image_wall.clone(),
             custom_size: Some(Vec2::new(TILE_SIZE, TILE_SIZE)),
@@ -121,9 +108,9 @@ pub fn spawn_bombs(
             TILE_SIZE * 5.0 + window.height() / 2.0,
             0.0,
         )),
-        Bomb {},
     ));
     commands.spawn((
+        Bomb {},
         Sprite {
             image: image_wall.clone(),
             custom_size: Some(Vec2::new(TILE_SIZE, TILE_SIZE)),
@@ -134,9 +121,9 @@ pub fn spawn_bombs(
             TILE_SIZE * 5.0 + window.height() / 2.0,
             0.0,
         )),
-        Bomb {},
     ));
     commands.spawn((
+        Bomb {},
         Sprite {
             image: image_wall.clone(),
             custom_size: Some(Vec2::new(TILE_SIZE, TILE_SIZE)),
@@ -147,6 +134,5 @@ pub fn spawn_bombs(
             TILE_SIZE * 5.0 + window.height() / 2.0,
             0.0,
         )),
-        Bomb {},
     ));
 }

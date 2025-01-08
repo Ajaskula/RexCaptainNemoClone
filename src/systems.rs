@@ -1,6 +1,5 @@
 use crate::bomb::components::{Bomb, ExplosionVisual};
-use crate::bomb::config::{BOMB_TIMER_CHAIN_REACTION_SECONDS};
-use crate::bomb::systems::EXPLOSION_RANGE;
+use crate::bomb::config::{BOMB_TIMER_CHAIN_REACTION_SECONDS, EXPLOSION_RANGE};
 use crate::components::Explodable;
 use crate::components::Lifetime;
 use crate::components::PlantedBomb;
@@ -21,7 +20,7 @@ pub fn spawn_exit(mut commands: Commands, asset_server: Res<AssetServer>) {
     let image = asset_server.load("textures/gate.png");
     commands.spawn((
         Sprite {
-            image: image,
+            image,
             custom_size: Some(Vec2::new(TILE_SIZE, TILE_SIZE)),
             ..Default::default()
         },

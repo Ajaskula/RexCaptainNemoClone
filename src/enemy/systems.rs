@@ -3,17 +3,9 @@ use bevy::prelude::*;
 use rand::Rng;
 
 use crate::enemy::components::Enemy;
+use crate::enemy::config::{ENEMY_DIRECTIONS_ARRAY, ENEMY_SPEED};
 use crate::moveable_elements::components::*;
 use crate::player::resources::*;
-
-pub const ENEMY_SPEED: f32 = 50.0;
-
-const ENEMY_DIRECTIONS_ARRAY: [Vec2; 4] = [
-    Vec2::new(1.0, 0.0),
-    Vec2::new(0.0, 1.0),
-    Vec2::new(-1.0, 0.0),
-    Vec2::new(0.0, -1.0),
-];
 
 pub fn spawn_enemies(
     mut commands: Commands,
@@ -36,52 +28,47 @@ pub fn spawn_enemies(
         let rand_x = start_x + rand::random::<f32>() * width;
         let rand_y = start_y + rand::random::<f32>() * height;
 
-        // Oblicz współrzędne w przestrzeni świata
         let world_x = rand_x * tile_size - window.width() / 2.0;
         let world_y = rand_y * tile_size - window.height() / 2.0;
 
-        // Tworzymy wroga
         commands.spawn((
+            Enemy {
+                num: 0,
+                direction: Vec2::new(1.0, 0.0),
+            },
             Sprite {
                 image: image_enemy.clone(),
                 custom_size: Some(Vec2::new(tile_size, tile_size)),
                 ..Default::default()
             },
             Transform::from_translation(Vec3::new(world_x, world_y, 0.0)),
-            Enemy {
-                num: 0,
-                direction: Vec2::new(1.0, 0.0),
-            },
-            Explodable {}, // Dodajemy komponent Explodable, by wróg mógł wybuchnąć
+            Explodable {},
         ));
     }
 }
 
 pub fn spawn_enemy(mut commands: Commands, asset_server: Res<AssetServer>) {
     // Pozycje X wież z funkcji spawn_dirt
-    let left_tower_x = 23.0 * TILE_SIZE as f32;
-    let right_tower_x = 25.0 * TILE_SIZE as f32;
-    let tower_base_y = -17.0 * TILE_SIZE as f32;
+    let left_tower_x = 23.0 * TILE_SIZE;
+    let right_tower_x = 25.0 * TILE_SIZE;
+    let tower_base_y = -17.0 * TILE_SIZE;
 
-    // Obliczenie pozycji startowej dla Enemy
     let enemy_start_x = (left_tower_x + right_tower_x) / 2.0;
     let enemy_start_y = tower_base_y + TILE_SIZE; // Tuż nad podstawą wież
 
-    // Załadowanie tekstury Enemy
     let enemy_texture = asset_server.load("textures/mumionek.png");
 
-    // Tworzenie Enemy
     commands.spawn((
+        Enemy {
+            num: 0,
+            direction: Vec2::new(0.0, -1.0),
+        },
         Sprite {
             image: enemy_texture.clone(),
             custom_size: Some(Vec2::new(TILE_SIZE, TILE_SIZE)),
             ..Default::default()
         },
         Transform::from_translation(Vec3::new(enemy_start_x, enemy_start_y, 0.0)),
-        Enemy {
-            num: 0,
-            direction: Vec2::new(0.0, -1.0), // Początkowy kierunek Enemy (np. w dół)
-        },
         NotPassableForPlayer,
         Explodable {},
         Explosive {}, // Enemy powinno blokować gracza
@@ -112,8 +99,8 @@ pub fn enemy_movement(
         if !collision {
             transform.translation = new_position;
         } else {
-            let mut rng = rand::thread_rng(); // Tworzenie generatora liczb losowych
-            let rand_num = rng.gen_range(0..=3); // Generowanie liczby z zakresu 0..=3 (włącznie)
+            let mut rng = rand::thread_rng();
+            let rand_num = rng.gen_range(0..=3);
 
             enemy.direction = ENEMY_DIRECTIONS_ARRAY[rand_num as usize];
         }
@@ -126,39 +113,36 @@ pub fn enemy_hit_moveable_element(
     falling_query: Query<&Transform, With<MovableElement>>,
     enemy_query: Query<(&Transform, Entity), With<Enemy>>,
     asset_server: Res<AssetServer>,
-    mut collision_debounce: ResMut<ColisionDebounce>,
+    mut collision_debounce: ResMut<CollisionDebounce>,
     time: Res<Time>,
 ) {
-    // Przechodzimy przez wszystkie spadające elementy
     for falling_transform in falling_query.iter() {
         for (enemy_transform, enemy_entity) in enemy_query.iter() {
-            // Sprawdzamy, czy spadający element jest nad przeciwnikiem
-            let is_above = (falling_transform.translation.x - enemy_transform.translation.x).abs()
-                < TILE_SIZE
-                && (falling_transform.translation.y > enemy_transform.translation.y)
-                && (falling_transform.translation.y - enemy_transform.translation.y).abs()
-                    < TILE_SIZE;
+            let is_above_enemy =
+                (falling_transform.translation.x - enemy_transform.translation.x).abs() < TILE_SIZE
+                    && (falling_transform.translation.y > enemy_transform.translation.y)
+                    && (falling_transform.translation.y - enemy_transform.translation.y).abs()
+                        < TILE_SIZE;
 
             collision_debounce.timer.tick(time.delta());
-            if collision_debounce.timer.finished() && is_above {
+            if collision_debounce.timer.finished() && is_above_enemy {
                 // Zniszcz przeciwnika
-                commands // spawnuje bombe w podanej lokalizacji
-                    .spawn((
-                        Sprite {
-                            // image: asset_server.load("textures/bomb.png").clone(),
-                            custom_size: Some(Vec2::new(TILE_SIZE, TILE_SIZE)),
-                            ..Default::default()
-                        },
-                        Transform::from_translation(Vec3::new(
-                            enemy_transform.translation.x,
-                            enemy_transform.translation.y,
-                            0.0,
-                        )),
-                        PlantedBomb {},
-                    )) // dokładam do tego sprite lifetime z timerem
-                    .insert(Lifetime {
+                commands.spawn((
+                    PlantedBomb {},
+                    Sprite {
+                        // image: asset_server.load("textures/bomb.png").clone(),
+                        custom_size: Some(Vec2::new(TILE_SIZE, TILE_SIZE)),
+                        ..Default::default()
+                    },
+                    Transform::from_translation(Vec3::new(
+                        enemy_transform.translation.x,
+                        enemy_transform.translation.y,
+                        0.0,
+                    )),
+                    Lifetime {
                         timer: Timer::from_seconds(0.0, TimerMode::Once),
-                    });
+                    },
+                ));
                 // commands.spawn(
                 //     AudioPlayer::new(
                 //         asset_server.load("audio/exploded_oneself.ogg"),

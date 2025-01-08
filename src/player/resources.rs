@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use std::time::Duration;
 
 #[derive(Resource)]
-pub struct ColisionDebounce {
+pub struct CollisionDebounce {
     pub timer: Timer,
 }
 

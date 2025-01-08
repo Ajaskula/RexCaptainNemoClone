@@ -34,7 +34,6 @@ use walls::systems::*;
 
 fn main() {
     App::new()
-        // licznik zebranych bomb
         .init_resource::<BombCount>()
         .insert_resource(PlayerMoveCooldown {
             last_move_time: Duration::from_secs(0),
@@ -47,7 +46,7 @@ fn main() {
         .add_systems(Startup, play_background_music)
         .add_systems(Startup, set_background)
         .add_systems(Startup, spawn_player)
-        .add_systems(Startup, setup_colision)
+        .add_systems(Startup, setup_collision)
         .add_systems(Startup, spawn_solid_walls)
         .add_systems(Startup, spawn_rocks)
         .add_systems(Startup, spawn_falling_bomb)
