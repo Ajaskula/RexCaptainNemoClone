@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 use rand::Rng;
 
+use crate::bomb::config::BOMB_TIMER_SECONDS;
 use crate::bomb::resources::BombDebounce;
 use crate::*;
 
@@ -50,7 +51,7 @@ pub fn plant_bomb_system(
                     PlantedBomb {},
                 )) // dokładam do tego sprite lifetime z timerem
                 .insert(Lifetime {
-                    timer: Timer::from_seconds(3.0, TimerMode::Once),
+                    timer: Timer::from_seconds(BOMB_TIMER_SECONDS, TimerMode::Once),
                 });
 
             let random_number = rand::thread_rng().gen_range(0..2);

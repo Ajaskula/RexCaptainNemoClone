@@ -1,4 +1,5 @@
-use crate::bomb::components::ExplosionVisual;
+use crate::bomb::components::{Bomb, ExplosionVisual};
+use crate::bomb::config::{BOMB_TIMER_CHAIN_REACTION_SECONDS};
 use crate::bomb::systems::EXPLOSION_RANGE;
 use crate::components::Explodable;
 use crate::components::Lifetime;
@@ -123,26 +124,29 @@ pub fn explosive_lifetime_system(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     time: Res<Time>,
-    mut query: Query<(Entity, &mut Lifetime, &Transform), With<PlantedBomb>>, // Encje bombowe z `Lifetime` i `Transform`
-    mut query_explodable: Query<(Entity, &Transform), With<Explodable>>, // Encje eksplodowalne z `Transform`
-    mut radius: Query<(Entity, &Transform)>,
+    mut planted_bombs: Query<(Entity, &mut Lifetime, &Transform), With<PlantedBomb>>,
+    mut explodables: Query<(Entity, &Transform), With<Explodable>>,
+    mut entities: Query<(Entity, &Transform)>,
+    mut bombs: Query<(Entity, &Transform), With<Bomb>>,
 ) {
     // przechodzę przez podłożone bomby
-    for (bomb_entity, mut bomb_lifetime, bomb_transform) in query.iter_mut() {
+    for (planted_bomb_entity, mut planted_bomb_lifetime, planted_bomb_transform) in
+        planted_bombs.iter_mut()
+    {
         // Zmniejszam czas ich życia
-        bomb_lifetime.timer.tick(time.delta());
+        planted_bomb_lifetime.timer.tick(time.delta());
 
         // Jeśli bomba powinna wybuchnąć
-        if bomb_lifetime.timer.finished() {
+        if planted_bomb_lifetime.timer.finished() {
             // despawnuje pombę
-            commands.entity(bomb_entity).despawn();
+            commands.entity(planted_bomb_entity).despawn();
             // println!("Wybucham bombę!");
 
             // znajduje wszystkie elementy w zasięgu
             let explosion_range = EXPLOSION_RANGE * TILE_SIZE;
 
-            for (_, radius_transform) in &mut radius {
-                if bomb_transform
+            for (_, radius_transform) in &mut entities {
+                if planted_bomb_transform
                     .translation
                     .distance(radius_transform.translation)
                     <= explosion_range
@@ -167,8 +171,8 @@ pub fn explosive_lifetime_system(
             }
 
             // przechodzę przez wysadzalne elementy w otoczeniu
-            for (explodable_entity, explodable_transform) in query_explodable.iter_mut() {
-                let distance = bomb_transform
+            for (explodable_entity, explodable_transform) in explodables.iter_mut() {
+                let distance = planted_bomb_transform
                     .translation
                     .distance(explodable_transform.translation);
 
@@ -180,7 +184,31 @@ pub fn explosive_lifetime_system(
                     });
                 }
             }
-            // TODO dopisz podmienianie rzeczy w zasięgu, na planted bomb
+
+            for (bomb_entity, bomb_transform) in &mut bombs {
+                if planted_bomb_transform
+                    .translation
+                    .distance(bomb_transform.translation)
+                    <= explosion_range
+                {
+                    commands.spawn((
+                        Sprite {
+                            image: asset_server.load("textures/bomb.png").clone(),
+                            custom_size: Some(Vec2::new(TILE_SIZE, TILE_SIZE)),
+                            ..Default::default()
+                        },
+                        *bomb_transform,
+                        PlantedBomb,
+                        Lifetime {
+                            timer: Timer::from_seconds(
+                                BOMB_TIMER_CHAIN_REACTION_SECONDS,
+                                Default::default(),
+                            ),
+                        },
+                    ));
+                    commands.entity(bomb_entity).despawn();
+                }
+            }
         }
     }
 }
