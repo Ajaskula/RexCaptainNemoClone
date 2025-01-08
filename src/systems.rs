@@ -25,7 +25,6 @@ pub fn spawn_exit(mut commands: Commands, asset_server: Res<AssetServer>) {
             ..Default::default()
         },
         Transform::from_translation(Vec3::new(17.0 * TILE_SIZE, 17.0 * TILE_SIZE, 1.0)),
-        Explodable {},
         NotPassableForEnemy,
     ));
 }
