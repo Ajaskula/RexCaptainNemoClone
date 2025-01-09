@@ -1,12 +1,7 @@
-use bevy::diagnostic::LogDiagnosticsPlugin;
 use bevy::prelude::*;
-use bevy::window::PrimaryWindow;
-
-use bevy::diagnostic::FrameTimeDiagnosticsPlugin;
 
 mod bomb;
 pub mod components;
-mod dirt;
 mod enemy;
 mod moveable_elements;
 mod player;
@@ -20,9 +15,6 @@ use systems::*;
 use bomb::components::*;
 use bomb::resources::*;
 use bomb::systems::*;
-// use bomb::systems::*;
-use dirt::components::*;
-use dirt::systems::*;
 use enemy::systems::*;
 use moveable_elements::systems::*;
 use player::components::*;
@@ -59,7 +51,6 @@ impl Plugin for GameplayPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Update, player_movement)
             .add_systems(Update, update_camera)
-            .add_systems(Update, player_dig_dirt)
             .add_systems(Update, player_collect_bomb)
             .add_systems(Update, plant_bomb_system)
             .add_systems(Update, remove_explosion_sprite)
@@ -81,7 +72,5 @@ fn main() {
         .insert_resource(PushCooldownTimer::default())
         .add_plugins(DefaultPlugins)
         .add_plugins((LevelPlugin, GameplayPlugin))
-        //.add_plugins(FrameTimeDiagnosticsPlugin::default())
-        //.add_plugins(LogDiagnosticsPlugin::default())
         .run();
 }

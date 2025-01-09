@@ -1,6 +1,4 @@
 use crate::*;
-use bevy::prelude::*;
-use bevy::window::PrimaryWindow;
 
 fn create_solid_wall_sprite(
     image: Handle<Image>,
@@ -25,12 +23,7 @@ fn create_solid_wall_sprite(
     )
 }
 
-pub fn spawn_solid_walls(
-    mut commands: Commands,
-    asset_server: Res<AssetServer>,
-    window_query: Query<&Window, With<PrimaryWindow>>,
-) {
-    let window = window_query.single();
+pub fn spawn_solid_walls(mut commands: Commands, asset_server: Res<AssetServer>) {
     let solid_wall_image = asset_server.load("textures/solid_wall.png");
     let half_width = WINDOW_WIDTH;
     let half_height = WINDOW_HEIGHT;

@@ -2,7 +2,6 @@ use crate::enemy::components::Enemy;
 use crate::moveable_elements::components::MovableElement;
 use crate::player::config::{PLAYER_STARTING_TILE_POSITION, THRESHOLD};
 use crate::*;
-use bevy::prelude::*;
 use player::resources::*;
 
 impl Default for PushCooldownTimer {
@@ -34,24 +33,6 @@ pub fn spawn_player(mut commands: Commands, asset_server: Res<AssetServer>) {
         Explodable,
         NotPassableForEnemy,
     ));
-}
-
-pub fn player_dig_dirt(
-    mut commands: Commands,
-    player_query: Query<&Transform, With<Player>>,
-    dirt_query: Query<(Entity, &Transform), With<Dirt>>,
-) {
-    if let Ok(player_transform) = player_query.get_single() {
-        // Znajdź i usuń wszystkie obiekty Dirt na pozycji gracza
-        dirt_query
-            .iter()
-            .filter(|(_, dirt_transform)| {
-                dirt_transform.translation.truncate() == player_transform.translation.truncate()
-            })
-            .for_each(|(dirt_entity, _)| {
-                commands.entity(dirt_entity).despawn();
-            });
-    }
 }
 
 fn create_planted_bomb_sprite() -> Sprite {
@@ -192,6 +173,7 @@ fn is_position_blocked(
     })
 }
 
+#[allow(clippy::type_complexity)]
 pub fn player_push_system(
     mut queries: ParamSet<(
         Query<&Transform, With<Player>>,
@@ -259,5 +241,5 @@ fn is_colliding_with_player(player_position: &Vec3, movable_position: &Vec3) -> 
 fn is_colliding_with_obstacles(new_position: &Vec3, obstacles: &[Vec3]) -> bool {
     obstacles
         .iter()
-        .any(|&obstacle| (obstacle - *new_position).length() < TILE_SIZE) // TODO: it can still collide even when >=
+        .any(|&obstacle| (obstacle - *new_position).length() < TILE_SIZE)
 }

@@ -1,5 +1,4 @@
 use crate::*;
-use bevy::prelude::*;
 use rand::{thread_rng, Rng};
 
 use crate::enemy::components::Enemy;
@@ -8,12 +7,7 @@ use crate::moveable_elements::components::*;
 use crate::player::config::{INITIAL_SAFE_ZONE_TILE_DISTANCE, PLAYER_STARTING_TILE_POSITION};
 use crate::player::resources::*;
 
-pub fn spawn_enemies(
-    mut commands: Commands,
-    asset_server: Res<AssetServer>,
-    window_query: Query<&Window, With<PrimaryWindow>>,
-) {
-    let window = window_query.get_single().unwrap();
+pub fn spawn_enemies(mut commands: Commands, asset_server: Res<AssetServer>) {
     let image_enemy = asset_server.load("textures/mumionek.png");
     let tile_size = TILE_SIZE;
 
@@ -34,7 +28,6 @@ pub fn spawn_enemies(
 
         commands.spawn((
             Enemy {
-                num: 0,
                 direction: Vec2::new(1.0, 0.0),
             },
             Sprite {
@@ -49,14 +42,6 @@ pub fn spawn_enemies(
 }
 
 pub fn spawn_enemy(mut commands: Commands, asset_server: Res<AssetServer>) {
-    // Pozycje X wież z funkcji spawn_dirt
-    let left_tower_x = 23.0 * TILE_SIZE;
-    let right_tower_x = 25.0 * TILE_SIZE;
-    let tower_base_y = -17.0 * TILE_SIZE;
-
-    let enemy_start_x = (left_tower_x + right_tower_x) / 2.0;
-    let enemy_start_y = tower_base_y + TILE_SIZE; // Tuż nad podstawą wież
-
     let enemy_texture = asset_server.load("textures/mumionek.png");
 
     let mut rng = thread_rng();
@@ -78,7 +63,6 @@ pub fn spawn_enemy(mut commands: Commands, asset_server: Res<AssetServer>) {
 
         commands.spawn((
             Enemy {
-                num: 0,
                 direction: Vec2::new(0.0, -1.0),
             },
             Sprite {
@@ -118,7 +102,7 @@ pub fn enemy_movement(
         if !collision {
             transform.translation = new_position;
         } else {
-            let mut rng = rand::thread_rng();
+            let mut rng = thread_rng();
             let rand_num = rng.gen_range(0..=3);
 
             enemy.direction = ENEMY_DIRECTIONS_ARRAY[rand_num as usize];
@@ -131,12 +115,11 @@ pub fn enemy_hit_moveable_element(
     mut commands: Commands,
     falling_query: Query<&Transform, With<MovableElement>>,
     enemy_query: Query<(&Transform, Entity), With<Enemy>>,
-    asset_server: Res<AssetServer>,
     mut collision_debounce: ResMut<CollisionDebounce>,
     time: Res<Time>,
 ) {
     for falling_transform in falling_query.iter() {
-        for (enemy_transform, enemy_entity) in enemy_query.iter() {
+        for (enemy_transform, _enemy_entity) in enemy_query.iter() {
             let is_above_enemy =
                 (falling_transform.translation.x - enemy_transform.translation.x).abs() < TILE_SIZE
                     && (falling_transform.translation.y > enemy_transform.translation.y)
@@ -162,11 +145,6 @@ pub fn enemy_hit_moveable_element(
                         timer: Timer::from_seconds(0.0, TimerMode::Once),
                     },
                 ));
-                // commands.spawn(
-                //     AudioPlayer::new(
-                //         asset_server.load("audio/exploded_oneself.ogg"),
-                //     )
-                // );
 
                 collision_debounce.timer.reset();
             }

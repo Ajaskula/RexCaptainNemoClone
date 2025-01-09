@@ -45,7 +45,7 @@ pub fn plant_bomb_system(
             ));
             bomb_count.value -= 1;
 
-            let random_number = rand::thread_rng().gen_range(0..2);
+            let random_number = thread_rng().gen_range(0..2);
             if random_number == 0 {
                 commands.spawn(AudioPlayer::new(asset_server.load("audio/run.ogg")));
             } else {
@@ -61,8 +61,6 @@ pub fn plant_bomb_system(
 
 pub fn spawn_bombs(mut commands: Commands, asset_server: Res<AssetServer>) {
     let image_wall = asset_server.load("textures/bomb.png");
-    // let x = rng.gen_range(0..=(WINDOW_WIDTH / TILE_SIZE) as usize) * TILE_SIZE as usize;
-    // let y = rng.gen_range(0..=(WINDOW_HEIGHT / TILE_SIZE) as usize) * TILE_SIZE as usize;
     let xy_around_player = [
         (1, 0),
         (0, 1),
@@ -87,7 +85,7 @@ pub fn spawn_bombs(mut commands: Commands, asset_server: Res<AssetServer>) {
     }
 }
 
-fn spawn_bomb(mut commands: &mut Commands, image: Handle<Image>, x: i32, y: i32) {
+fn spawn_bomb(commands: &mut Commands, image: Handle<Image>, x: i32, y: i32) {
     commands.spawn((
         Bomb {},
         Sprite {

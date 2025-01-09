@@ -1,7 +1,6 @@
 use crate::moveable_elements::components::*;
 use crate::moveable_elements::config::{FALLING_SPEED, THRESHOLD};
 use crate::*;
-use bevy::prelude::*;
 
 fn get_movable_element(
     position: Vec3,
@@ -65,42 +64,6 @@ fn get_explosive_movable_element(
     )
 }
 
-pub fn spawn_plague_l(mut commands: Commands, asset_server: Res<AssetServer>) {
-    let position = Vec3::new(13.0 * TILE_SIZE, 3.0 * TILE_SIZE, 0.0);
-    let image_path = "textures/plagueL.png";
-    let movable_element = MovableElement::PlagueL;
-    commands.spawn(get_movable_element(
-        position,
-        image_path,
-        movable_element,
-        &asset_server,
-    ));
-}
-
-pub fn spawn_plague_m(mut commands: Commands, asset_server: Res<AssetServer>) {
-    let position = Vec3::new(15.0 * TILE_SIZE, 3.0 * TILE_SIZE, 0.0);
-    let image_path = "textures/plagueM.png";
-    let movable_element = MovableElement::PlagueM;
-    commands.spawn(get_movable_element(
-        position,
-        image_path,
-        movable_element,
-        &asset_server,
-    ));
-}
-
-pub fn spawn_plague_r(mut commands: Commands, asset_server: Res<AssetServer>) {
-    let position = Vec3::new(17.0 * TILE_SIZE, 3.0 * TILE_SIZE, 0.0);
-    let image_path = "textures/plagueR.png";
-    let movable_element = MovableElement::PlagueR;
-    commands.spawn(get_movable_element(
-        position,
-        image_path,
-        movable_element,
-        &asset_server,
-    ));
-}
-
 pub fn spawn_rocks(mut commands: Commands, asset_server: Res<AssetServer>, window: Query<&Window>) {
     let image_path = "textures/rock.png";
 
@@ -115,27 +78,6 @@ pub fn spawn_rocks(mut commands: Commands, asset_server: Res<AssetServer>, windo
         MovableElement::Rock,
         &asset_server,
     ));
-
-    //let num_columns = 5;
-    //let num_rows = 3;
-
-    //// Odległość między kamieniami
-    //let offset_x = TILE_SIZE * 2.0;
-    //let offset_y = TILE_SIZE * 2.0;
-
-    //let shift_up = TILE_SIZE * 6.0;
-
-    //for row in 0..num_rows {
-    //    for col in 0..num_columns {
-    //        let position = Vec3::new(col as f32 * offset_x, row as f32 * offset_y + shift_up, 0.0);
-    //        commands.spawn(get_movable_element(
-    //            position,
-    //            image_path,
-    //            MovableElement::Rock,
-    //            &asset_server,
-    //        ));
-    //    }
-    //}
 }
 
 pub fn spawn_falling_bomb(mut commands: Commands, asset_server: Res<AssetServer>) {
@@ -228,36 +170,4 @@ pub fn moveable_elements_movement(
             }
         }
     }
-}
-
-pub fn spawn_rock_on_tower(mut commands: Commands, asset_server: Res<AssetServer>) {
-    // Pozycje X wież z funkcji spawn_dirt
-    let left_tower_x = 23.0 * TILE_SIZE;
-    let right_tower_x = 25.0 * TILE_SIZE;
-    let tower_height = 5.0;
-    let tower_base_y = -17.0 * TILE_SIZE;
-
-    // Obliczenie pozycji Y szczytu wież
-    let tower_top_y = tower_base_y + tower_height * TILE_SIZE;
-
-    let image_path = "textures/rock.png";
-    let movable_element = MovableElement::Rock;
-
-    // Tworzenie Rock na szczycie lewej wieży
-    let position_left = Vec3::new(left_tower_x, tower_top_y, 0.0);
-    commands.spawn(get_movable_element(
-        position_left,
-        image_path,
-        movable_element,
-        &asset_server,
-    ));
-
-    // Tworzenie Rock na szczycie prawej wieży
-    let position_right = Vec3::new(right_tower_x, tower_top_y, 0.0);
-    commands.spawn(get_movable_element(
-        position_right,
-        image_path,
-        movable_element,
-        &asset_server,
-    ));
 }

@@ -6,11 +6,9 @@ use crate::components::PlantedBomb;
 use crate::player::components::Player;
 use crate::NotPassableForEnemy;
 use bevy::prelude::*;
-use bevy::window::PrimaryWindow;
 use bevy_audio::PlaybackMode;
 use rand::seq::SliceRandom;
 
-// rozmiar kafelka mapy
 pub const TILE_SIZE: f32 = 40.0;
 pub const WINDOW_HEIGHT_TILES: i32 = 40;
 pub const WINDOW_WIDTH_TILES: i32 = 40;
@@ -45,12 +43,7 @@ pub fn spawn_exit(mut commands: Commands, asset_server: Res<AssetServer>) {
     ));
 }
 
-pub fn set_background(
-    mut commands: Commands,
-    asset_server: Res<AssetServer>,
-    window_query: Query<&Window, With<PrimaryWindow>>,
-) {
-    let window = window_query.get_single().unwrap();
+pub fn set_background(mut commands: Commands, asset_server: Res<AssetServer>) {
     for x in (0..2 * WINDOW_WIDTH as usize).step_by(TILE_SIZE as usize) {
         for y in (0..2 * WINDOW_HEIGHT as usize).step_by(TILE_SIZE as usize) {
             let empty_tile_image: Handle<Image> = asset_server.load("textures/empty.png");
@@ -105,13 +98,11 @@ pub fn update_camera(
 pub fn explodable_lifetime_system(
     mut commands: Commands,
     time: Res<Time>,
-    mut query: Query<(Entity, &mut Lifetime, &Explodable)>, // Dodajemy `Explodable` do query
+    mut query: Query<(Entity, &mut Lifetime, &Explodable)>,
 ) {
     for (entity, mut lifetime, _explodable) in query.iter_mut() {
-        // Zmniejsz czas życia
         lifetime.timer.tick(time.delta());
         if lifetime.timer.finished() {
-            // Usuń element, gdy czas się skończy
             commands.entity(entity).despawn();
             println!("Wysadzam wysadzalny element {:?}", entity);
         }
@@ -140,20 +131,14 @@ pub fn explosive_lifetime_system(
     mut entities: Query<(Entity, &Transform)>,
     mut bombs: Query<(Entity, &Transform), With<Bomb>>,
 ) {
-    // przechodzę przez podłożone bomby
     for (planted_bomb_entity, mut planted_bomb_lifetime, planted_bomb_transform) in
         planted_bombs.iter_mut()
     {
-        // Zmniejszam czas ich życia
         planted_bomb_lifetime.timer.tick(time.delta());
 
-        // Jeśli bomba powinna wybuchnąć
         if planted_bomb_lifetime.timer.finished() {
-            // despawnuje pombę
             commands.entity(planted_bomb_entity).despawn();
-            // println!("Wybucham bombę!");
 
-            // znajduje wszystkie elementy w zasięgu
             let explosion_range = EXPLOSION_RANGE * TILE_SIZE;
 
             for (_, radius_transform) in &mut entities {
@@ -181,17 +166,14 @@ pub fn explosive_lifetime_system(
                 }
             }
 
-            // przechodzę przez wysadzalne elementy w otoczeniu
             for (explodable_entity, explodable_transform) in explodables.iter_mut() {
                 let distance = planted_bomb_transform
                     .translation
                     .distance(explodable_transform.translation);
 
-                // jeśli są one wystarczająco blisko, to do konkrentej encji dodaje lifetime
                 if distance <= explosion_range {
-                    // Dodaj `Lifetime` do eksplodowalnych elementów
                     commands.entity(explodable_entity).insert(Lifetime {
-                        timer: Timer::from_seconds(0.2, TimerMode::Once), // Dajemy im np. 2 sekundy istnienia
+                        timer: Timer::from_seconds(0.2, TimerMode::Once),
                     });
                 }
             }
