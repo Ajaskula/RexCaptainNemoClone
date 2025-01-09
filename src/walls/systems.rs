@@ -77,7 +77,7 @@ pub fn spawn_wall_rectangles(
 
             commands.spawn(create_wall_sprite(
                 image_wall.clone(),
-                Vec3::new(world_x, world_y, 0.0),
+                Vec3::new(world_x, world_y, 1.0),
             ));
         }
     }

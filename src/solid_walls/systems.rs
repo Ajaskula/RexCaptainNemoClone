@@ -40,8 +40,8 @@ pub fn spawn_solid_walls(
         .step_by(TILE_SIZE as usize)
         .map(|x| x as f32)
     {
-        let top_position = Vec3::new(x, half_height, 0.0);
-        let bottom_position = Vec3::new(x, -half_height, 0.0);
+        let top_position = Vec3::new(x, half_height, 1.0);
+        let bottom_position = Vec3::new(x, -half_height, 1.0);
 
         commands.spawn(create_solid_wall_sprite(
             solid_wall_image.clone(),
@@ -58,8 +58,8 @@ pub fn spawn_solid_walls(
         .step_by(TILE_SIZE as usize)
         .map(|y| y as f32)
     {
-        let left_position = Vec3::new(-half_width, y, 0.0);
-        let right_position = Vec3::new(half_width, y, 0.0);
+        let left_position = Vec3::new(-half_width, y, 1.0);
+        let right_position = Vec3::new(half_width, y, 1.0);
 
         commands.spawn(create_solid_wall_sprite(
             solid_wall_image.clone(),
