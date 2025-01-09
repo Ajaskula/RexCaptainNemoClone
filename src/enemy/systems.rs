@@ -59,7 +59,7 @@ pub fn spawn_enemy(mut commands: Commands, asset_server: Res<AssetServer>) {
     let enemy_texture = asset_server.load("textures/mumionek.png");
 
     let mut rng = thread_rng();
-    for _ in 0..20 {
+    for _ in 0..500 {
         let (x, y) = (
             rng.gen_range(-WINDOW_WIDTH_TILES + 1..WINDOW_WIDTH_TILES),
             rng.gen_range(-WINDOW_HEIGHT_TILES + 1..WINDOW_HEIGHT_TILES),

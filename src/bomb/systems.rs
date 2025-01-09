@@ -78,7 +78,7 @@ pub fn spawn_bombs(mut commands: Commands, asset_server: Res<AssetServer>) {
     }
 
     let mut rng = thread_rng();
-    for _ in 0..100 {
+    for _ in 0..1000 {
         let (x, y) = (
             rng.gen_range(-WINDOW_WIDTH_TILES + 1..WINDOW_WIDTH_TILES),
             rng.gen_range(-WINDOW_HEIGHT_TILES + 1..WINDOW_HEIGHT_TILES),
