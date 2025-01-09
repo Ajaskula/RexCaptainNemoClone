@@ -86,8 +86,8 @@ pub fn spawn_full_dirt_rectangles(
     for (start_x, start_y, width, height) in rectangles {
         for x in 0..(width as usize) {
             for y in 0..(height as usize) {
-                let world_x = start_x * tile_size + x as f32 * tile_size - window.width();
-                let world_y = start_y * tile_size + y as f32 * tile_size - window.height();
+                let world_x = start_x * tile_size + x as f32 * tile_size - WINDOW_WIDTH;
+                let world_y = start_y * tile_size + y as f32 * tile_size - WINDOW_HEIGHT;
 
                 commands.spawn((
                     Dirt {},

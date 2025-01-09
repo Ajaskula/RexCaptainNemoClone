@@ -41,8 +41,8 @@ pub fn spawn_walls(
                 ..Default::default()
             },
             Transform::from_translation(Vec3::new(
-                TILE_SIZE * x as f32 + window.width() / 2.0,
-                window.height() / 2.0,
+                TILE_SIZE * x as f32 + WINDOW_WIDTH / 2.0,
+                WINDOW_HEIGHT / 2.0,
                 0.0,
             )),
             Explodable,
@@ -59,8 +59,8 @@ pub fn spawn_wall_rectangles(
 ) {
     let window = window_query.single();
     let image_wall = asset_server.load("textures/wall.png");
-    let half_window_width = window.width() / 2.0;
-    let half_window_height = window.height() / 2.0;
+    let half_window_width = WINDOW_WIDTH / 2.0;
+    let half_window_height = WINDOW_HEIGHT / 2.0;
 
     let rectangles = [(5.0, 5.0, 10.0, 6.0), (15.0, 10.0, 8.0, 4.0)];
 

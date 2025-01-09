@@ -32,8 +32,8 @@ pub fn spawn_solid_walls(
 ) {
     let window = window_query.single();
     let solid_wall_image = asset_server.load("textures/solid_wall.png");
-    let half_width = window.width();
-    let half_height = window.height();
+    let half_width = WINDOW_WIDTH;
+    let half_height = WINDOW_HEIGHT;
 
     // Tworzenie poziomych ścian (góra i dół)
     for x in (-half_width as isize..=half_width as isize)

@@ -68,8 +68,8 @@ pub fn spawn_bombs(
     // let num = 1;
 
     let image_wall = asset_server.load("textures/bomb.png");
-    // let x = rng.gen_range(0..=(window.width() / TILE_SIZE) as usize) * TILE_SIZE as usize;
-    // let y = rng.gen_range(0..=(window.height() / TILE_SIZE) as usize) * TILE_SIZE as usize;
+    // let x = rng.gen_range(0..=(WINDOW_WIDTH / TILE_SIZE) as usize) * TILE_SIZE as usize;
+    // let y = rng.gen_range(0..=(WINDOW_HEIGHT / TILE_SIZE) as usize) * TILE_SIZE as usize;
     commands.spawn((
         Bomb {},
         Sprite {
@@ -78,8 +78,8 @@ pub fn spawn_bombs(
             ..Default::default()
         },
         Transform::from_translation(Vec3::new(
-            (TILE_SIZE * -3.0) + window.width() / 2.0,
-            TILE_SIZE * 5.0 + window.height() / 2.0,
+            (TILE_SIZE * -3.0) + WINDOW_WIDTH / 2.0,
+            TILE_SIZE * 5.0 + WINDOW_HEIGHT / 2.0,
             0.0,
         )),
     ));
@@ -91,8 +91,8 @@ pub fn spawn_bombs(
             ..Default::default()
         },
         Transform::from_translation(Vec3::new(
-            (-TILE_SIZE * 2.0) + window.width() / 2.0,
-            TILE_SIZE * 5.0 + window.height() / 2.0,
+            (-TILE_SIZE * 2.0) + WINDOW_WIDTH / 2.0,
+            TILE_SIZE * 5.0 + WINDOW_HEIGHT / 2.0,
             0.0,
         )),
     ));
@@ -104,8 +104,8 @@ pub fn spawn_bombs(
             ..Default::default()
         },
         Transform::from_translation(Vec3::new(
-            (TILE_SIZE * 1.0) + window.width() / 2.0,
-            TILE_SIZE * 5.0 + window.height() / 2.0,
+            (TILE_SIZE * 1.0) + WINDOW_WIDTH / 2.0,
+            TILE_SIZE * 5.0 + WINDOW_HEIGHT / 2.0,
             0.0,
         )),
     ));
@@ -117,8 +117,8 @@ pub fn spawn_bombs(
             ..Default::default()
         },
         Transform::from_translation(Vec3::new(
-            (TILE_SIZE * 2.0) + window.width() / 2.0,
-            TILE_SIZE * 5.0 + window.height() / 2.0,
+            (TILE_SIZE * 2.0) + WINDOW_WIDTH / 2.0,
+            TILE_SIZE * 5.0 + WINDOW_HEIGHT / 2.0,
             0.0,
         )),
     ));
@@ -130,8 +130,8 @@ pub fn spawn_bombs(
             ..Default::default()
         },
         Transform::from_translation(Vec3::new(
-            (TILE_SIZE * 7.0) + window.width() / 2.0,
-            TILE_SIZE * 5.0 + window.height() / 2.0,
+            (TILE_SIZE * 7.0) + WINDOW_WIDTH / 2.0,
+            TILE_SIZE * 5.0 + WINDOW_HEIGHT / 2.0,
             0.0,
         )),
     ));

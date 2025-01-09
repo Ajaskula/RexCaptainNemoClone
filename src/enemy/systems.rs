@@ -28,8 +28,8 @@ pub fn spawn_enemies(
         let rand_x = start_x + rand::random::<f32>() * width;
         let rand_y = start_y + rand::random::<f32>() * height;
 
-        let world_x = rand_x * tile_size - window.width() / 2.0;
-        let world_y = rand_y * tile_size - window.height() / 2.0;
+        let world_x = rand_x * tile_size - WINDOW_WIDTH / 2.0;
+        let world_y = rand_y * tile_size - WINDOW_HEIGHT / 2.0;
 
         commands.spawn((
             Enemy {
