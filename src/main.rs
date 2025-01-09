@@ -39,6 +39,7 @@ impl Plugin for LevelPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, spawn_solid_walls)
             .add_systems(Startup, spawn_wall_rectangles)
+            .add_systems(Startup, spawn_random_walls)
             .add_systems(Startup, spawn_player)
             .add_systems(Startup, spawn_camera)
             .add_systems(Startup, play_background_music)

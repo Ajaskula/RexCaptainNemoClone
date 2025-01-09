@@ -1,6 +1,7 @@
 use crate::*;
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
+use rand::{thread_rng, Rng};
 
 fn create_wall_sprite(
     image: Handle<Image>,
@@ -49,6 +50,23 @@ pub fn spawn_walls(
             NotPassableForEnemy,
             NotPassableForPlayer,
         ));
+    }
+}
+
+pub fn spawn_random_walls(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    window_query: Query<&Window, With<PrimaryWindow>>
+) {
+    let window = window_query.get_single().unwrap();
+    let image_wall = asset_server.load("textures/wall.png");
+    let mut rng = thread_rng();
+    for _ in 0..3000 {
+        let (x, y) = (
+            rng.gen_range(-WINDOW_WIDTH_TILES + 1..WINDOW_WIDTH_TILES),
+            rng.gen_range(-WINDOW_HEIGHT_TILES + 1..WINDOW_HEIGHT_TILES),
+        );
+        commands.spawn(create_wall_sprite(image_wall.clone(), Vec3::new(x as f32 * TILE_SIZE, y as f32 * TILE_SIZE, 1.0)));
     }
 }
 
