@@ -8,11 +8,14 @@ use crate::NotPassableForEnemy;
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
 use bevy_audio::PlaybackMode;
+use rand::seq::SliceRandom;
 
 // rozmiar kafelka mapy
 pub const TILE_SIZE: f32 = 40.0;
-pub const WINDOW_HEIGHT: f32 = 40.0 * TILE_SIZE;
-pub const WINDOW_WIDTH: f32 = 40.0 * TILE_SIZE;
+pub const WINDOW_HEIGHT_TILES: i32 = 40;
+pub const WINDOW_WIDTH_TILES: i32 = 40;
+pub const WINDOW_HEIGHT: f32 = WINDOW_HEIGHT_TILES as f32 * TILE_SIZE;
+pub const WINDOW_WIDTH: f32 = WINDOW_WIDTH_TILES as f32 * TILE_SIZE;
 
 pub fn spawn_camera(mut commands: Commands) {
     commands.spawn((Camera2d,));
@@ -20,13 +23,24 @@ pub fn spawn_camera(mut commands: Commands) {
 
 pub fn spawn_exit(mut commands: Commands, asset_server: Res<AssetServer>) {
     let image = asset_server.load("textures/gate.png");
+    let possible_positions = [
+        (0, -WINDOW_HEIGHT_TILES),
+        (0, WINDOW_HEIGHT_TILES),
+        (-WINDOW_WIDTH_TILES, 0),
+        (WINDOW_WIDTH_TILES, 0),
+    ];
+    let position = possible_positions.choose(&mut rand::thread_rng()).unwrap();
     commands.spawn((
         Sprite {
             image,
             custom_size: Some(Vec2::new(TILE_SIZE, TILE_SIZE)),
             ..Default::default()
         },
-        Transform::from_translation(Vec3::new(17.0 * TILE_SIZE, 17.0 * TILE_SIZE, 1.0)),
+        Transform::from_translation(Vec3::new(
+            position.0 as f32 * TILE_SIZE,
+            position.1 as f32 * TILE_SIZE,
+            1.0,
+        )),
         NotPassableForEnemy,
     ));
 }
@@ -47,11 +61,7 @@ pub fn set_background(
                     ..Default::default()
                 },
                 Transform {
-                    translation: Vec3::new(
-                        x as f32 - WINDOW_WIDTH,
-                        y as f32 - WINDOW_HEIGHT,
-                        -1.0,
-                    ),
+                    translation: Vec3::new(x as f32 - WINDOW_WIDTH, y as f32 - WINDOW_HEIGHT, -1.0),
                     ..Default::default()
                 },
             ));

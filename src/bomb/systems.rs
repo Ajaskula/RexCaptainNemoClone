@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use rand::Rng;
+use rand::{thread_rng, Rng};
 
 use crate::bomb::config::{BOMB_DEBOUNCE_SECONDS, BOMB_TIMER_SECONDS};
 use crate::bomb::resources::BombDebounce;
@@ -59,80 +59,42 @@ pub fn plant_bomb_system(
     }
 }
 
-pub fn spawn_bombs(
-    mut commands: Commands,
-    asset_server: Res<AssetServer>,
-    window_query: Query<&Window, With<PrimaryWindow>>,
-) {
-    let window = window_query.get_single().unwrap();
-    // let num = 1;
-
+pub fn spawn_bombs(mut commands: Commands, asset_server: Res<AssetServer>) {
     let image_wall = asset_server.load("textures/bomb.png");
     // let x = rng.gen_range(0..=(WINDOW_WIDTH / TILE_SIZE) as usize) * TILE_SIZE as usize;
     // let y = rng.gen_range(0..=(WINDOW_HEIGHT / TILE_SIZE) as usize) * TILE_SIZE as usize;
+    let xy_around_player = [
+        (1, 0),
+        (0, 1),
+        (1, 1),
+        (-1, 0),
+        (0, -1),
+        (-1, -1),
+        (1, -1),
+        (-1, 1),
+    ];
+    for (x, y) in xy_around_player {
+        spawn_bomb(&mut commands, image_wall.clone(), x, y);
+    }
+
+    let mut rng = thread_rng();
+    for _ in 0..100 {
+        let (x, y) = (
+            rng.gen_range(-WINDOW_WIDTH_TILES + 1..WINDOW_WIDTH_TILES),
+            rng.gen_range(-WINDOW_HEIGHT_TILES + 1..WINDOW_HEIGHT_TILES),
+        );
+        spawn_bomb(&mut commands, image_wall.clone(), x, y);
+    }
+}
+
+fn spawn_bomb(mut commands: &mut Commands, image: Handle<Image>, x: i32, y: i32) {
     commands.spawn((
         Bomb {},
         Sprite {
-            image: image_wall.clone(),
+            image,
             custom_size: Some(Vec2::new(TILE_SIZE, TILE_SIZE)),
             ..Default::default()
         },
-        Transform::from_translation(Vec3::new(
-            (TILE_SIZE * -3.0) + WINDOW_WIDTH / 2.0,
-            TILE_SIZE * 5.0 + WINDOW_HEIGHT / 2.0,
-            0.0,
-        )),
-    ));
-    commands.spawn((
-        Bomb {},
-        Sprite {
-            image: image_wall.clone(),
-            custom_size: Some(Vec2::new(TILE_SIZE, TILE_SIZE)),
-            ..Default::default()
-        },
-        Transform::from_translation(Vec3::new(
-            (-TILE_SIZE * 2.0) + WINDOW_WIDTH / 2.0,
-            TILE_SIZE * 5.0 + WINDOW_HEIGHT / 2.0,
-            0.0,
-        )),
-    ));
-    commands.spawn((
-        Bomb {},
-        Sprite {
-            image: image_wall.clone(),
-            custom_size: Some(Vec2::new(TILE_SIZE, TILE_SIZE)),
-            ..Default::default()
-        },
-        Transform::from_translation(Vec3::new(
-            (TILE_SIZE * 1.0) + WINDOW_WIDTH / 2.0,
-            TILE_SIZE * 5.0 + WINDOW_HEIGHT / 2.0,
-            0.0,
-        )),
-    ));
-    commands.spawn((
-        Bomb {},
-        Sprite {
-            image: image_wall.clone(),
-            custom_size: Some(Vec2::new(TILE_SIZE, TILE_SIZE)),
-            ..Default::default()
-        },
-        Transform::from_translation(Vec3::new(
-            (TILE_SIZE * 2.0) + WINDOW_WIDTH / 2.0,
-            TILE_SIZE * 5.0 + WINDOW_HEIGHT / 2.0,
-            0.0,
-        )),
-    ));
-    commands.spawn((
-        Bomb {},
-        Sprite {
-            image: image_wall.clone(),
-            custom_size: Some(Vec2::new(TILE_SIZE, TILE_SIZE)),
-            ..Default::default()
-        },
-        Transform::from_translation(Vec3::new(
-            (TILE_SIZE * 7.0) + WINDOW_WIDTH / 2.0,
-            TILE_SIZE * 5.0 + WINDOW_HEIGHT / 2.0,
-            0.0,
-        )),
+        Transform::from_translation(Vec3::new(TILE_SIZE * x as f32, TILE_SIZE * y as f32, 0.0)),
     ));
 }

@@ -62,8 +62,23 @@ pub fn spawn_wall_rectangles(
     let half_window_width = WINDOW_WIDTH / 2.0;
     let half_window_height = WINDOW_HEIGHT / 2.0;
 
-    let rectangles = [(5.0, 5.0, 10.0, 6.0), (15.0, 10.0, 8.0, 4.0)];
-
+    //let rectangles = [(5.0, 5.0, 10.0, 6.0), (15.0, 10.0, 8.0, 4.0)];
+    let rectangles = [
+        (35.0, 35.0, 1, WINDOW_HEIGHT_TILES / 4),
+        (35.0, 35.0, WINDOW_WIDTH_TILES / 4, 1),
+        (
+            35.0 + WINDOW_WIDTH_TILES as f32 / 4.0,
+            35.0,
+            1,
+            WINDOW_HEIGHT_TILES / 4,
+        ),
+        (
+            35.0,
+            35.0 + WINDOW_HEIGHT_TILES as f32 / 4.0,
+            WINDOW_WIDTH_TILES / 4 + 1,
+            1,
+        ),
+    ];
     for &(start_x, start_y, width, height) in &rectangles {
         let tile_positions = (0..width as usize)
             .flat_map(|x| (0..height as usize).map(move |y| (x, y)))
@@ -72,8 +87,8 @@ pub fn spawn_wall_rectangles(
             });
 
         for (x, y) in tile_positions {
-            let world_x = start_x * TILE_SIZE + x as f32 * TILE_SIZE - half_window_width;
-            let world_y = start_y * TILE_SIZE + y as f32 * TILE_SIZE - half_window_height;
+            let world_x = start_x * TILE_SIZE + x as f32 * TILE_SIZE - WINDOW_WIDTH;
+            let world_y = start_y * TILE_SIZE + y as f32 * TILE_SIZE - WINDOW_HEIGHT;
 
             commands.spawn(create_wall_sprite(
                 image_wall.clone(),

@@ -1,6 +1,6 @@
 use crate::*;
 use bevy::prelude::*;
-use rand::Rng;
+use rand::{thread_rng, Rng};
 
 use crate::enemy::components::Enemy;
 use crate::enemy::config::{ENEMY_DIRECTIONS_ARRAY, ENEMY_SPEED};
@@ -58,21 +58,28 @@ pub fn spawn_enemy(mut commands: Commands, asset_server: Res<AssetServer>) {
 
     let enemy_texture = asset_server.load("textures/mumionek.png");
 
-    commands.spawn((
-        Enemy {
-            num: 0,
-            direction: Vec2::new(0.0, -1.0),
-        },
-        Sprite {
-            image: enemy_texture.clone(),
-            custom_size: Some(Vec2::new(TILE_SIZE, TILE_SIZE)),
-            ..Default::default()
-        },
-        Transform::from_translation(Vec3::new(enemy_start_x, enemy_start_y, 0.0)),
-        NotPassableForPlayer,
-        Explodable {},
-        Explosive {}, // Enemy powinno blokować gracza
-    ));
+    let mut rng = thread_rng();
+    for _ in 0..20 {
+        let (x, y) = (
+            rng.gen_range(-WINDOW_WIDTH_TILES + 1..WINDOW_WIDTH_TILES),
+            rng.gen_range(-WINDOW_HEIGHT_TILES + 1..WINDOW_HEIGHT_TILES),
+        );
+        commands.spawn((
+            Enemy {
+                num: 0,
+                direction: Vec2::new(0.0, -1.0),
+            },
+            Sprite {
+                image: enemy_texture.clone(),
+                custom_size: Some(Vec2::new(TILE_SIZE, TILE_SIZE)),
+                ..Default::default()
+            },
+            Transform::from_translation(Vec3::new(x as f32 * TILE_SIZE, y as f32 * TILE_SIZE, 0.0)),
+            NotPassableForPlayer,
+            Explodable {},
+            Explosive {}, // Enemy powinno blokować gracza
+        ));
+    }
 }
 
 pub fn enemy_movement(

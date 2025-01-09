@@ -101,29 +101,41 @@ pub fn spawn_plague_r(mut commands: Commands, asset_server: Res<AssetServer>) {
     ));
 }
 
-pub fn spawn_rocks(mut commands: Commands, asset_server: Res<AssetServer>) {
+pub fn spawn_rocks(mut commands: Commands, asset_server: Res<AssetServer>, window: Query<&Window>) {
     let image_path = "textures/rock.png";
 
-    let num_columns = 5;
-    let num_rows = 3;
+    let window_width = window.single().width();
+    let window_height = window.single().height();
 
-    // Odległość między kamieniami
-    let offset_x = TILE_SIZE * 2.0;
-    let offset_y = TILE_SIZE * 2.0;
+    let position = Vec3::new(-window_width + TILE_SIZE, window_height - TILE_SIZE, 0.0);
 
-    let shift_up = TILE_SIZE * 6.0;
+    commands.spawn(get_movable_element(
+        position,
+        image_path,
+        MovableElement::Rock,
+        &asset_server,
+    ));
 
-    for row in 0..num_rows {
-        for col in 0..num_columns {
-            let position = Vec3::new(col as f32 * offset_x, row as f32 * offset_y + shift_up, 0.0);
-            commands.spawn(get_movable_element(
-                position,
-                image_path,
-                MovableElement::Rock,
-                &asset_server,
-            ));
-        }
-    }
+    //let num_columns = 5;
+    //let num_rows = 3;
+
+    //// Odległość między kamieniami
+    //let offset_x = TILE_SIZE * 2.0;
+    //let offset_y = TILE_SIZE * 2.0;
+
+    //let shift_up = TILE_SIZE * 6.0;
+
+    //for row in 0..num_rows {
+    //    for col in 0..num_columns {
+    //        let position = Vec3::new(col as f32 * offset_x, row as f32 * offset_y + shift_up, 0.0);
+    //        commands.spawn(get_movable_element(
+    //            position,
+    //            image_path,
+    //            MovableElement::Rock,
+    //            &asset_server,
+    //        ));
+    //    }
+    //}
 }
 
 pub fn spawn_falling_bomb(mut commands: Commands, asset_server: Res<AssetServer>) {
