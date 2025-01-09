@@ -37,7 +37,7 @@ pub fn plant_bomb_system(
                 Transform::from_translation(Vec3::new(
                     transform.translation.x,
                     transform.translation.y,
-                    0.0,
+                    1.0,
                 )),
                 Lifetime {
                     timer: Timer::from_seconds(BOMB_TIMER_SECONDS, TimerMode::Once),
@@ -95,6 +95,6 @@ fn spawn_bomb(mut commands: &mut Commands, image: Handle<Image>, x: i32, y: i32)
             custom_size: Some(Vec2::new(TILE_SIZE, TILE_SIZE)),
             ..Default::default()
         },
-        Transform::from_translation(Vec3::new(TILE_SIZE * x as f32, TILE_SIZE * y as f32, 0.0)),
+        Transform::from_translation(Vec3::new(TILE_SIZE * x as f32, TILE_SIZE * y as f32, 1.0)),
     ));
 }

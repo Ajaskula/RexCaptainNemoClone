@@ -28,7 +28,7 @@ pub fn spawn_player(mut commands: Commands, asset_server: Res<AssetServer>) {
         Transform::from_translation(Vec3::new(
             PLAYER_STARTING_TILE_POSITION.0 * TILE_SIZE,
             PLAYER_STARTING_TILE_POSITION.1 * TILE_SIZE,
-            1.0,
+            3.0,
         )),
         GlobalTransform::default(),
         Explodable,

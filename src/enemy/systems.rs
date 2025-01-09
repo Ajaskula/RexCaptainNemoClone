@@ -42,7 +42,7 @@ pub fn spawn_enemies(
                 custom_size: Some(Vec2::new(tile_size, tile_size)),
                 ..Default::default()
             },
-            Transform::from_translation(Vec3::new(world_x, world_y, 0.0)),
+            Transform::from_translation(Vec3::new(world_x, world_y, 2.0)),
             Explodable {},
         ));
     }
@@ -86,7 +86,7 @@ pub fn spawn_enemy(mut commands: Commands, asset_server: Res<AssetServer>) {
                 custom_size: Some(Vec2::new(TILE_SIZE, TILE_SIZE)),
                 ..Default::default()
             },
-            Transform::from_translation(Vec3::new(x as f32 * TILE_SIZE, y as f32 * TILE_SIZE, 0.0)),
+            Transform::from_translation(Vec3::new(x as f32 * TILE_SIZE, y as f32 * TILE_SIZE, 2.0)),
             NotPassableForPlayer,
             Explodable {},
             Explosive {}, // Enemy powinno blokować gracza
