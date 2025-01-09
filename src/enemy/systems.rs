@@ -5,6 +5,7 @@ use rand::{thread_rng, Rng};
 use crate::enemy::components::Enemy;
 use crate::enemy::config::{ENEMY_DIRECTIONS_ARRAY, ENEMY_SPEED};
 use crate::moveable_elements::components::*;
+use crate::player::config::{INITIAL_SAFE_ZONE_TILE_DISTANCE, PLAYER_STARTING_TILE_POSITION};
 use crate::player::resources::*;
 
 pub fn spawn_enemies(
@@ -60,10 +61,21 @@ pub fn spawn_enemy(mut commands: Commands, asset_server: Res<AssetServer>) {
 
     let mut rng = thread_rng();
     for _ in 0..500 {
-        let (x, y) = (
+        let (mut x, mut y) = (
             rng.gen_range(-WINDOW_WIDTH_TILES + 1..WINDOW_WIDTH_TILES),
             rng.gen_range(-WINDOW_HEIGHT_TILES + 1..WINDOW_HEIGHT_TILES),
         );
+        while Vec2::new(x as f32, y as f32).distance(Vec2::new(
+            PLAYER_STARTING_TILE_POSITION.0,
+            PLAYER_STARTING_TILE_POSITION.1,
+        )) < INITIAL_SAFE_ZONE_TILE_DISTANCE as f32
+        {
+            (x, y) = (
+                rng.gen_range(-WINDOW_WIDTH_TILES + 1..WINDOW_WIDTH_TILES),
+                rng.gen_range(-WINDOW_HEIGHT_TILES + 1..WINDOW_HEIGHT_TILES),
+            );
+        }
+
         commands.spawn((
             Enemy {
                 num: 0,

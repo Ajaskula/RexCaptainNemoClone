@@ -1,6 +1,6 @@
 use crate::enemy::components::Enemy;
 use crate::moveable_elements::components::MovableElement;
-use crate::player::config::THRESHOLD;
+use crate::player::config::{PLAYER_STARTING_TILE_POSITION, THRESHOLD};
 use crate::*;
 use bevy::prelude::*;
 use player::resources::*;
@@ -25,7 +25,11 @@ pub fn spawn_player(mut commands: Commands, asset_server: Res<AssetServer>) {
             custom_size: Some(Vec2::new(TILE_SIZE, TILE_SIZE)),
             ..Default::default()
         },
-        Transform::from_translation(Vec3::new(0.0, 0.0, 1.0)),
+        Transform::from_translation(Vec3::new(
+            PLAYER_STARTING_TILE_POSITION.0 * TILE_SIZE,
+            PLAYER_STARTING_TILE_POSITION.1 * TILE_SIZE,
+            1.0,
+        )),
         GlobalTransform::default(),
         Explodable,
         NotPassableForEnemy,
